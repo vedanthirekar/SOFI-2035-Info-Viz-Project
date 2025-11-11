@@ -1,0 +1,16 @@
+# SOFI Interactive Visualization - Python Dependencies
+
+# Core web framework
+dash==2.14.0
+plotly==5.17.0
+
+# Data processing
+pandas==2.1.0
+numpy==1.25.0
+
+# Excel file handling
+pyxlsb==1.0.10
+openpyxl==3.1.2
+
+# Additional utilities
+scipy==1.11.0
