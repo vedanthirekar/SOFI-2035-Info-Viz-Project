@@ -1,6 +1,7 @@
 import dash
 from dash import dcc, html, Input, Output
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import pandas as pd
 import numpy as np
 
@@ -57,7 +58,7 @@ app.layout = html.Div([
     Input("indicator-dropdown", "value"),
     Input("growth-type", "value")
 )
-def update_graph(change, indicator, growth_type):
+def update_graph(change, indicator, growth_type): 
     df_adj = df.copy()
 
     # Only apply changes to years >= 2025 (future projections)
@@ -75,33 +76,61 @@ def update_graph(change, indicator, growth_type):
     # Recalculate SOFI for all years with adjusted values
     df_adj["SOFI"] = compute_sofi(df_adj[indicator_cols], weights)
 
-    fig = go.Figure()
-    
-    # Add baseline (original) data as dashed lines
-    fig.add_trace(go.Scatter(x=df["Year"], y=df[indicator],
-                             mode="lines", name=f"{indicator} (Baseline)", 
-                             line={"color": "lightcoral", "dash": "dash"}))
-    fig.add_trace(go.Scatter(x=df["Year"], y=df["SOFI"],
-                             mode="lines", name="SOFI (Baseline)", 
-                             line={"color": "lightgreen", "dash": "dash"}))
-    
-    # Add adjusted data as solid lines
-    fig.add_trace(go.Scatter(x=df_adj["Year"], y=df_adj[indicator],
-                             mode="lines", name=f"{indicator} (Adjusted)", 
-                             line={"color": "red"}))
-    fig.add_trace(go.Scatter(x=df_adj["Year"], y=df_adj["SOFI"],
-                             mode="lines", name="SOFI (Adjusted)", 
-                             line={"color": "green"}))
-    
-    # Add vertical line at 2025 to show where changes begin
+    # Create subplots: 1 row, 2 columns
+    fig = make_subplots(
+        rows=1, cols=2,
+        subplot_titles=(f"{indicator} Over Time", "SOFI Index Over Time"),
+        horizontal_spacing=0.12
+    )
+
+    # LEFT SUBPLOT: Indicator
+    # Baseline indicator (dashed)
+    fig.add_trace(go.Scatter(
+        x=df["Year"], y=df[indicator],
+        mode="lines", name="Baseline",
+        line={"color": "lightcoral", "dash": "dash"}
+    ), row=1, col=1)
+
+    # Adjusted indicator (solid)
+    fig.add_trace(go.Scatter(
+        x=df_adj["Year"], y=df_adj[indicator],
+        mode="lines", name="Adjusted",
+        line={"color": "red"}
+    ), row=1, col=1)
+
+    # RIGHT SUBPLOT: SOFI
+    # Baseline SOFI (dashed)
+    fig.add_trace(go.Scatter(
+        x=df["Year"], y=df["SOFI"],
+        mode="lines", name="Baseline",
+        line={"color": "lightgreen", "dash": "dash"},
+        showlegend=False
+    ), row=1, col=2)
+
+    # Adjusted SOFI (solid)
+    fig.add_trace(go.Scatter(
+        x=df_adj["Year"], y=df_adj["SOFI"],
+        mode="lines", name="Adjusted",
+        line={"color": "green"},
+        showlegend=False
+    ), row=1, col=2)
+
+    # Add vertical lines at 2025 for both subplots
     fig.add_vline(x=2025, line_width=2, line_dash="dot", line_color="gray",
-                  annotation_text="2025 (Change Start)")
-    
+                  row=1, col=1)
+    fig.add_vline(x=2025, line_width=2, line_dash="dot", line_color="gray",
+                  row=1, col=2, annotation_text="2025")
+
+    # Update layout
+    fig.update_xaxes(title_text="Year", row=1, col=1)
+    fig.update_xaxes(title_text="Year", row=1, col=2)
+    fig.update_yaxes(title_text=indicator, row=1, col=1)
+    fig.update_yaxes(title_text="SOFI Index", row=1, col=2)
+
     fig.update_layout(
-        xaxis_title="Year",
-        yaxis_title="Value / Index",
         template="plotly_white",
-        hovermode="x unified"
+        hovermode="x unified",
+        height=500
     )
     return fig
 
