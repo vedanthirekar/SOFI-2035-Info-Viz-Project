@@ -4,20 +4,20 @@ import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
 
-# ======== Sample Data ========
-years = np.arange(1990, 2036)
-df = pd.DataFrame({
-    "Year": years,
-    "GNI per capita": np.linspace(10000, 18000, len(years)),
-    "Income Inequality": np.linspace(30, 25, len(years)),
-    "Unemployment": np.linspace(6, 4, len(years))
-})
-indicator_cols = ["GNI per capita", "Income Inequality", "Unemployment"]
-weights = np.array([0.4, 0.3, 0.3])
+# ======== Load Data from Excel ========
+df = pd.read_excel("sample1.xlsx")
+
+# Automatically detect indicator columns (exclude 'Year' and 'SOFI' if present)
+indicator_cols = [col for col in df.columns if col not in ["Year", "SOFI"]]
+
+# Set equal weights for all indicators
+weights = np.array([1.0 / len(indicator_cols)] * len(indicator_cols))
+
+# print(df)
 
 def compute_sofi(df, weights):
-    norm = (df - df.min()) / (df.max() - df.min())
-    sofi = np.dot(norm, weights)
+    values = df
+    sofi = np.dot(values, weights)
     return sofi
 
 df["SOFI"] = compute_sofi(df[indicator_cols], weights)
@@ -48,18 +48,41 @@ app.layout = html.Div([
 )
 def update_graph(change, indicator):
     df_adj = df.copy()
-    df_adj[indicator] *= (1 + change / 100)
+    
+    # Only apply changes to years >= 2025 (future projections)
+    future_mask = df_adj["Year"] >= 2025
+    df_adj.loc[future_mask, indicator] *= (1 + change / 100)
+    
+    # Recalculate SOFI for all years with adjusted values
     df_adj["SOFI"] = compute_sofi(df_adj[indicator_cols], weights)
 
     fig = go.Figure()
+    
+    # Add baseline (original) data as dashed lines
+    fig.add_trace(go.Scatter(x=df["Year"], y=df[indicator],
+                             mode="lines", name=f"{indicator} (Baseline)", 
+                             line={"color": "lightcoral", "dash": "dash"}))
+    fig.add_trace(go.Scatter(x=df["Year"], y=df["SOFI"],
+                             mode="lines", name="SOFI (Baseline)", 
+                             line={"color": "lightgreen", "dash": "dash"}))
+    
+    # Add adjusted data as solid lines
     fig.add_trace(go.Scatter(x=df_adj["Year"], y=df_adj[indicator],
-                             mode="lines", name=indicator, line=dict(color="red")))
+                             mode="lines", name=f"{indicator} (Adjusted)", 
+                             line={"color": "red"}))
     fig.add_trace(go.Scatter(x=df_adj["Year"], y=df_adj["SOFI"],
-                             mode="lines", name="SOFI Index", line=dict(color="green")))
+                             mode="lines", name="SOFI (Adjusted)", 
+                             line={"color": "green"}))
+    
+    # Add vertical line at 2025 to show where changes begin
+    fig.add_vline(x=2025, line_width=2, line_dash="dot", line_color="gray",
+                  annotation_text="2025 (Change Start)")
+    
     fig.update_layout(
         xaxis_title="Year",
         yaxis_title="Value / Index",
-        template="plotly_white"
+        template="plotly_white",
+        hovermode="x unified"
     )
     return fig
 
