@@ -38,21 +38,40 @@ app.layout = html.Div([
         id="indicator-dropdown"
     ),
 
+    html.Label("Growth Type"),
+    dcc.RadioItems(
+        options=[
+            {"label": "Linear (one-time change)", "value": "linear"},
+            {"label": "Exponential (compound growth)", "value": "exponential"}
+        ],
+        value="linear",
+        id="growth-type"
+    ),
+
     dcc.Graph(id="sofi-graph")
 ])
 
 @app.callback(
     Output("sofi-graph", "figure"),
     Input("adjust-slider", "value"),
-    Input("indicator-dropdown", "value")
+    Input("indicator-dropdown", "value"),
+    Input("growth-type", "value")
 )
-def update_graph(change, indicator):
+def update_graph(change, indicator, growth_type):
     df_adj = df.copy()
-    
+
     # Only apply changes to years >= 2025 (future projections)
-    future_mask = df_adj["Year"] >= 2025
-    df_adj.loc[future_mask, indicator] *= (1 + change / 100)
-    
+    future_years = df_adj[df_adj["Year"] >= 2025].index
+
+    if growth_type == "linear":
+        # Linear: Apply same percentage change to all future years
+        df_adj.loc[future_years, indicator] *= (1 + change / 100)
+    else:
+        # Exponential: Apply compound growth year over year
+        for i, idx in enumerate(future_years):
+            # Each year compounds on the previous year's value
+            df_adj.loc[idx, indicator] *= (1 + change / 100) ** (i + 1)
+
     # Recalculate SOFI for all years with adjusted values
     df_adj["SOFI"] = compute_sofi(df_adj[indicator_cols], weights)
 
