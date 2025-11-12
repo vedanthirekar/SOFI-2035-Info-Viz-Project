@@ -7,10 +7,10 @@ import numpy as np
 
 # ======== Load Data from Excel ========
 # Sheet1: Normalized values (for SOFI calculation)
-df_normalized = pd.read_excel("sample1.xlsx", sheet_name="Sheet1")
+df_normalized = pd.read_excel("data1.xlsx", sheet_name="Sheet1")
 
 # Sheet2: Original values (for display)
-df_original = pd.read_excel("sample1.xlsx", sheet_name="Sheet2")
+df_original = pd.read_excel("data1.xlsx", sheet_name="Sheet2")
 
 # Automatically detect indicator columns (exclude 'Year' and 'SOFI' if present)
 indicator_cols = [col for col in df_normalized.columns if col not in ["Year", "SOFI"]]
