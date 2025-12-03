@@ -37,45 +37,53 @@ app.layout = html.Div([
     html.H2("SOFI Interactive What-If Simulator - Multi-Variable"),
 
     html.Div([
-        html.H4("Add Indicators to Adjust"),
-
-        # Dropdown to select indicator
         html.Div([
-            dcc.Dropdown(
-                id="indicator-selector",
-                options=[{"label": ind, "value": ind} for ind in indicator_cols],
-                placeholder="Select an indicator to add...",
-                style={"width": "400px", "marginRight": "10px"}
-            ),
-            html.Button("Add Indicator", id="add-indicator-btn", n_clicks=0,
-                       style={"padding": "8px 16px"})
-        ], style={"display": "flex", "alignItems": "center", "marginBottom": "20px"}),
+            # Left side - Indicator selection
+            html.Div([
+                html.H4("Add Indicators to Adjust"),
 
-        # Container for active indicator inputs
-        html.Div(id="active-indicators-container", children=[],
-                style={"marginBottom": "20px"}),
+                # Dropdown to select indicator
+                html.Div([
+                    dcc.Dropdown(
+                        id="indicator-selector",
+                        options=[{"label": ind, "value": ind} for ind in indicator_cols],
+                        placeholder="Select an indicator to add...",
+                        style={"width": "400px", "marginRight": "10px"}
+                    ),
+                    html.Button("Add Indicator", id="add-indicator-btn", n_clicks=0,
+                               style={"padding": "8px 16px"})
+                ], style={"display": "flex", "alignItems": "center", "marginBottom": "20px"}),
 
-        # Action buttons
-        html.Div([
-            html.Button("Clear All", id="clear-all-btn", n_clicks=0,
-                       style={"marginRight": "10px", "padding": "8px 16px"}),
-            html.Button("Apply Changes", id="apply-button", n_clicks=0,
-                       style={"padding": "8px 16px", "backgroundColor": "#4CAF50",
-                              "color": "white", "border": "none"})
-        ], style={"marginBottom": "20px"}),
+                # Container for active indicator inputs
+                html.Div(id="active-indicators-container", children=[],
+                        style={"marginBottom": "20px"}),
+            ], style={"flex": "1", "marginRight": "30px"}),
 
-        # Growth type selector
-        html.Label("Growth Type", style={"fontWeight": "bold"}),
-        dcc.RadioItems(
-            options=[
-                {"label": "One-time change (apply % once to all future years)", "value": "linear"},
-                {"label": "Compound growth (% compounds year-over-year)", "value": "exponential"},
-                {"label": "Annual rate (% growth/decline per year from 2025)", "value": "annual_rate"}
-            ],
-            value="linear",
-            id="growth-type",
-            style={"marginBottom": "20px"}
-        ),
+            # Right side - Growth type and buttons
+            html.Div([
+                html.Label("Growth Type", style={"fontWeight": "bold", "marginBottom": "10px"}),
+                dcc.RadioItems(
+                    options=[
+                        {"label": "One-time change (apply % once to all future years)", "value": "linear"},
+                        {"label": "Compound growth (% compounds year-over-year)", "value": "exponential"},
+                        {"label": "Annual rate (% growth/decline per year from 2025)", "value": "annual_rate"}
+                    ],
+                    value="linear",
+                    id="growth-type",
+                    style={"marginBottom": "30px"}
+                ),
+
+                # Action buttons
+                html.Div([
+                    html.Button("Clear All", id="clear-all-btn", n_clicks=0,
+                               style={"marginRight": "10px", "padding": "8px 16px",
+                                      "width": "120px"}),
+                    html.Button("Apply Changes", id="apply-button", n_clicks=0,
+                               style={"padding": "8px 16px", "backgroundColor": "#4CAF50",
+                                      "color": "white", "border": "none", "width": "140px"})
+                ]),
+            ], style={"minWidth": "280px"}),
+        ], style={"display": "flex"}),
     ], style={"padding": "20px", "backgroundColor": "#f5f5f5",
               "borderRadius": "5px", "marginBottom": "20px"}),
 
@@ -116,16 +124,27 @@ def manage_indicators(add_clicks, clear_clicks, remove_clicks, selected, active)
 # Callback to update the UI for active indicators
 @app.callback(
     Output("active-indicators-container", "children"),
-    Input("active-indicators-store", "data")
+    Input("active-indicators-store", "data"),
+    State({"type": "indicator-input", "index": ALL}, "value"),
+    State({"type": "indicator-input", "index": ALL}, "id")
 )
-def update_active_indicators_ui(active_indicators):
+def update_active_indicators_ui(active_indicators, current_values, current_ids):
     """Generate UI elements for active indicators."""
     if not active_indicators:
         return html.Div("No indicators added yet. Select one from the dropdown above.",
                        style={"color": "#666", "fontStyle": "italic"})
 
+    # Create a map of existing values
+    value_map = {}
+    if current_ids and current_values:
+        for i, input_id in enumerate(current_ids):
+            value_map[input_id["index"]] = current_values[i]
+
     indicator_divs = []
     for ind in active_indicators:
+        # Preserve existing value or default to 0
+        existing_value = value_map.get(ind, 0)
+
         indicator_divs.append(
             html.Div([
                 html.Label(ind, style={"fontWeight": "bold", "marginRight": "10px",
@@ -133,7 +152,7 @@ def update_active_indicators_ui(active_indicators):
                 dcc.Input(
                     id={"type": "indicator-input", "index": ind},
                     type="number",
-                    value=0,
+                    value=existing_value,
                     step=0.5,
                     style={"width": "80px", "marginRight": "5px"}
                 ),
@@ -228,17 +247,15 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
         vertical_spacing=0.15
     )
 
-    # Add traces for each modified indicator
-    colors = ["red", "blue", "purple", "orange", "brown", "pink", "teal", "magenta"]
+    # Add traces for each modified indicator (all in red)
     for idx, ind_name in enumerate(indicators_to_show):
         row_idx = (idx // max_cols) + 1
         col_idx = (idx % max_cols) + 1
-        color = colors[idx % len(colors)]
 
         fig.add_trace(go.Scatter(
             x=df_original["Year"], y=df_original[ind_name],
             mode="lines", name="Baseline",
-            line={"color": color, "dash": "dash", "width": 1.5},
+            line={"color": "red", "dash": "dash", "width": 1.5},
             legendgroup="baseline",
             showlegend=(idx == 0)
         ), row=row_idx, col=col_idx)
@@ -246,7 +263,7 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
         fig.add_trace(go.Scatter(
             x=df_orig_adj["Year"], y=df_orig_adj[ind_name],
             mode="lines", name="Adjusted",
-            line={"color": color, "width": 2},
+            line={"color": "red", "width": 2},
             legendgroup="adjusted",
             showlegend=(idx == 0)
         ), row=row_idx, col=col_idx)
