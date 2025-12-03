@@ -168,9 +168,10 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
         ind_name = input_id["index"]
         change = input_values[i] if input_values[i] is not None else 0
 
-        if change != 0:
-            changes_applied[ind_name] = change
+        # Track all indicators (even with 0 change)
+        changes_applied[ind_name] = change
 
+        if change != 0:
             if growth_type == "linear":
                 df_norm_adj.loc[future_years, ind_name] *= (1 + change / 100)
                 df_orig_adj.loc[future_years, ind_name] *= (1 + change / 100)
@@ -182,8 +183,8 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
     # Recalculate SOFI
     df_norm_adj["SOFI"] = compute_sofi(df_norm_adj[indicator_cols], weights)
 
-    # Show only indicators with changes
-    indicators_to_show = list(changes_applied.keys()) if changes_applied else []
+    # Show all added indicators (including those with 0 change)
+    indicators_to_show = list(changes_applied.keys())
     all_plots = indicators_to_show + ["SOFI"]
     total_plots = len(all_plots)
 
