@@ -68,8 +68,9 @@ app.layout = html.Div([
         html.Label("Growth Type", style={"fontWeight": "bold"}),
         dcc.RadioItems(
             options=[
-                {"label": "Linear (one-time change)", "value": "linear"},
-                {"label": "Exponential (compound growth)", "value": "exponential"}
+                {"label": "One-time change (apply % once to all future years)", "value": "linear"},
+                {"label": "Compound growth (% compounds year-over-year)", "value": "exponential"},
+                {"label": "Annual rate (% growth/decline per year from 2025)", "value": "annual_rate"}
             ],
             value="linear",
             id="growth-type",
@@ -173,12 +174,31 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
 
         if change != 0:
             if growth_type == "linear":
+                # One-time change: apply same % to all future years
                 df_norm_adj.loc[future_years, ind_name] *= (1 + change / 100)
                 df_orig_adj.loc[future_years, ind_name] *= (1 + change / 100)
-            else:
+            elif growth_type == "exponential":
+                # Compound growth: % compounds year-over-year
                 for j, idx in enumerate(future_years):
                     df_norm_adj.loc[idx, ind_name] *= (1 + change / 100) ** (j + 1)
                     df_orig_adj.loc[idx, ind_name] *= (1 + change / 100) ** (j + 1)
+            else:  # annual_rate
+                # Annual rate: continuous linear growth/decline from 2025
+                # Get the 2024 value (last historical point)
+                year_2024_idx = df_norm_adj[df_norm_adj["Year"] == 2024].index
+                if len(year_2024_idx) > 0:
+                    base_value_norm = df_norm_adj.loc[year_2024_idx[0], ind_name]
+                    base_value_orig = df_orig_adj.loc[year_2024_idx[0], ind_name]
+                else:
+                    # If 2024 doesn't exist, use first future year as base
+                    base_value_norm = df_norm_adj.loc[future_years[0], ind_name]
+                    base_value_orig = df_orig_adj.loc[future_years[0], ind_name]
+                
+                # Apply linear rate: each year adds the % to the previous year
+                for j, idx in enumerate(future_years):
+                    years_from_start = j + 1
+                    df_norm_adj.loc[idx, ind_name] = base_value_norm * (1 + (change / 100) * years_from_start)
+                    df_orig_adj.loc[idx, ind_name] = base_value_orig * (1 + (change / 100) * years_from_start)
 
     # Recalculate SOFI
     df_norm_adj["SOFI"] = compute_sofi(df_norm_adj[indicator_cols], weights)
