@@ -237,15 +237,17 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
 
         fig.add_trace(go.Scatter(
             x=df_original["Year"], y=df_original[ind_name],
-            mode="lines", name=f"{ind_name} (Baseline)",
+            mode="lines", name="Baseline",
             line={"color": color, "dash": "dash", "width": 1.5},
+            legendgroup="baseline",
             showlegend=(idx == 0)
         ), row=row_idx, col=col_idx)
 
         fig.add_trace(go.Scatter(
             x=df_orig_adj["Year"], y=df_orig_adj[ind_name],
-            mode="lines", name=f"{ind_name} (Adjusted)",
+            mode="lines", name="Adjusted",
             line={"color": color, "width": 2},
+            legendgroup="adjusted",
             showlegend=(idx == 0)
         ), row=row_idx, col=col_idx)
 
@@ -260,14 +262,18 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
 
     fig.add_trace(go.Scatter(
         x=df_normalized["Year"], y=df_normalized["SOFI"],
-        mode="lines", name="SOFI (Baseline)",
-        line={"color": "lightgreen", "dash": "dash", "width": 2}
+        mode="lines", name="Baseline",
+        line={"color": "green", "dash": "dash", "width": 2},
+        legendgroup="baseline",
+        showlegend=False
     ), row=sofi_row, col=sofi_col)
 
     fig.add_trace(go.Scatter(
         x=df_norm_adj["Year"], y=df_norm_adj["SOFI"],
-        mode="lines", name="SOFI (Adjusted)",
-        line={"color": "green", "width": 3}
+        mode="lines", name="Adjusted",
+        line={"color": "green", "width": 3},
+        legendgroup="adjusted",
+        showlegend=False
     ), row=sofi_row, col=sofi_col)
 
     fig.add_vline(x=2025, line_width=1, line_dash="dot", line_color="gray",
@@ -284,8 +290,9 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
         hovermode="x unified",
         height=plot_height,
         showlegend=True,
-        legend={"orientation": "h", "yanchor": "bottom", "y": -0.05,
-                "xanchor": "center", "x": 0.5}
+        legend={"orientation": "h", "yanchor": "top", "y": -0.2,
+                "xanchor": "center", "x": 0.5},
+        margin={"b": 80}
     )
 
     return fig
