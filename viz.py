@@ -34,64 +34,111 @@ df_normalized["SOFI"] = compute_sofi(df_normalized[indicator_cols], weights)
 app = dash.Dash(__name__, suppress_callback_exceptions=True)
 
 app.layout = html.Div([
-    html.H2("SOFI Interactive What-If Simulator - Multi-Variable"),
+    html.H1("SOFI Dashboard", style={"textAlign": "center", "marginBottom": "30px"}),
 
-    html.Div([
-        html.Div([
-            # Left side - Indicator selection
-            html.Div([
-                html.H4("Add Indicators to Adjust"),
+    # Tabs
+    dcc.Tabs(id="tabs", value="tab-whatif", children=[
+        dcc.Tab(label="What-If Simulator", value="tab-whatif"),
+        dcc.Tab(label="Historical Trends", value="tab-trends"),
+        dcc.Tab(label="Indicator Analysis", value="tab-analysis"),
+        dcc.Tab(label="Correlations", value="tab-correlations"),
+    ]),
 
-                # Dropdown to select indicator
-                html.Div([
-                    dcc.Dropdown(
-                        id="indicator-selector",
-                        options=[{"label": ind, "value": ind} for ind in indicator_cols],
-                        placeholder="Select an indicator to add...",
-                        style={"width": "400px", "marginRight": "10px"}
-                    ),
-                    html.Button("Add Indicator", id="add-indicator-btn", n_clicks=0,
-                               style={"padding": "8px 16px"})
-                ], style={"display": "flex", "alignItems": "center", "marginBottom": "20px"}),
-
-                # Container for active indicator inputs
-                html.Div(id="active-indicators-container", children=[],
-                        style={"marginBottom": "20px"}),
-            ], style={"flex": "1", "marginRight": "30px"}),
-
-            # Right side - Growth type and buttons
-            html.Div([
-                html.Label("Growth Type", style={"fontWeight": "bold", "marginBottom": "10px"}),
-                dcc.RadioItems(
-                    options=[
-                        {"label": "One-time change (apply % once to all future years)", "value": "linear"},
-                        {"label": "Compound growth (% compounds year-over-year)", "value": "exponential"},
-                        {"label": "Annual rate (% growth/decline per year from 2025)", "value": "annual_rate"}
-                    ],
-                    value="linear",
-                    id="growth-type",
-                    style={"marginBottom": "30px"}
-                ),
-
-                # Action buttons
-                html.Div([
-                    html.Button("Clear All", id="clear-all-btn", n_clicks=0,
-                               style={"marginRight": "10px", "padding": "8px 16px",
-                                      "width": "120px"}),
-                    html.Button("Apply Changes", id="apply-button", n_clicks=0,
-                               style={"padding": "8px 16px", "backgroundColor": "#4CAF50",
-                                      "color": "white", "border": "none", "width": "140px"})
-                ]),
-            ], style={"minWidth": "280px"}),
-        ], style={"display": "flex"}),
-    ], style={"padding": "20px", "backgroundColor": "#f5f5f5",
-              "borderRadius": "5px", "marginBottom": "20px"}),
-
-    # Store to track active indicators
-    dcc.Store(id="active-indicators-store", data=[]),
-
-    dcc.Graph(id="sofi-graph")
+    html.Div(id="tab-content")
 ], style={"padding": "20px"})
+
+
+# Callback to render tab content
+@app.callback(
+    Output("tab-content", "children"),
+    Input("tabs", "value")
+)
+def render_tab_content(active_tab):
+    """Render content based on selected tab."""
+    if active_tab == "tab-whatif":
+        return html.Div([
+            html.H2("What-If Simulator - Multi-Variable", style={"marginTop": "20px"}),
+
+            html.Div([
+                html.Div([
+                    # Left side - Indicator selection
+                    html.Div([
+                        html.H4("Add Indicators to Adjust"),
+
+                        # Dropdown to select indicator
+                        html.Div([
+                            dcc.Dropdown(
+                                id="indicator-selector",
+                                options=[{"label": ind, "value": ind} for ind in indicator_cols],
+                                placeholder="Select an indicator to add...",
+                                style={"width": "400px", "marginRight": "10px"}
+                            ),
+                            html.Button("Add Indicator", id="add-indicator-btn", n_clicks=0,
+                                       style={"padding": "8px 16px"})
+                        ], style={"display": "flex", "alignItems": "center", "marginBottom": "20px"}),
+
+                        # Container for active indicator inputs
+                        html.Div(id="active-indicators-container", children=[],
+                                style={"marginBottom": "20px"}),
+                    ], style={"flex": "1", "marginRight": "30px"}),
+
+                    # Right side - Growth type and buttons
+                    html.Div([
+                        html.Label("Growth Type", style={"fontWeight": "bold", "marginBottom": "10px"}),
+                        dcc.RadioItems(
+                            options=[
+                                {"label": "One-time change (apply % once to all future years)", "value": "linear"},
+                                {"label": "Compound growth (% compounds year-over-year)", "value": "exponential"},
+                                {"label": "Annual rate (% growth/decline per year from 2025)", "value": "annual_rate"}
+                            ],
+                            value="linear",
+                            id="growth-type",
+                            style={"marginBottom": "30px"}
+                        ),
+
+                        # Action buttons
+                        html.Div([
+                            html.Button("Clear All", id="clear-all-btn", n_clicks=0,
+                                       style={"marginRight": "10px", "padding": "8px 16px",
+                                              "width": "120px"}),
+                            html.Button("Apply Changes", id="apply-button", n_clicks=0,
+                                       style={"padding": "8px 16px", "backgroundColor": "#4CAF50",
+                                              "color": "white", "border": "none", "width": "140px"})
+                        ]),
+                    ], style={"minWidth": "280px"}),
+                ], style={"display": "flex"}),
+            ], style={"padding": "20px", "backgroundColor": "#f5f5f5",
+                      "borderRadius": "5px", "marginBottom": "20px"}),
+
+            # Store to track active indicators
+            dcc.Store(id="active-indicators-store", data=[]),
+
+            dcc.Graph(id="sofi-graph")
+        ])
+
+    elif active_tab == "tab-trends":
+        return html.Div([
+            html.H2("Historical Trends", style={"marginTop": "20px"}),
+            html.P("Visualize historical trends of SOFI and individual indicators over time."),
+            html.Div("Coming soon...", style={"padding": "40px", "textAlign": "center",
+                                             "color": "#666", "fontSize": "18px"})
+        ])
+
+    elif active_tab == "tab-analysis":
+        return html.Div([
+            html.H2("Indicator Analysis", style={"marginTop": "20px"}),
+            html.P("Deep dive into individual indicators and their contributions to SOFI."),
+            html.Div("Coming soon...", style={"padding": "40px", "textAlign": "center",
+                                             "color": "#666", "fontSize": "18px"})
+        ])
+
+    elif active_tab == "tab-correlations":
+        return html.Div([
+            html.H2("Correlations", style={"marginTop": "20px"}),
+            html.P("Explore correlations between different indicators."),
+            html.Div("Coming soon...", style={"padding": "40px", "textAlign": "center",
+                                             "color": "#666", "fontSize": "18px"})
+        ])
 
 # Callback to add indicator
 @app.callback(
