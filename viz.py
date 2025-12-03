@@ -184,20 +184,34 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
 
     # Show only indicators with changes
     indicators_to_show = list(changes_applied.keys()) if changes_applied else []
-    num_indicators = len(indicators_to_show)
+    all_plots = indicators_to_show + ["SOFI"]
+    total_plots = len(all_plots)
 
-    # Create subplots
+    # Calculate grid layout: max 4 columns per row
+    max_cols = 4
+    num_rows = (total_plots + max_cols - 1) // max_cols
+    num_cols = min(total_plots, max_cols)
+
+    # Create subplot titles with positions
+    subplot_titles = []
+    for ind in indicators_to_show:
+        subplot_titles.append(f"{ind} ({changes_applied.get(ind, 0):+.1f}%)")
+    subplot_titles.append("SOFI Index")
+
+    # Create subplots with multiple rows
     fig = make_subplots(
-        rows=1, cols=num_indicators + 1,
-        subplot_titles=[f"{ind} ({changes_applied.get(ind, 0):+.1f}%)"
-                       for ind in indicators_to_show] + ["SOFI Index"],
-        horizontal_spacing=0.08
+        rows=num_rows,
+        cols=num_cols,
+        subplot_titles=subplot_titles,
+        horizontal_spacing=0.08,
+        vertical_spacing=0.15
     )
 
     # Add traces for each modified indicator
     colors = ["red", "blue", "purple", "orange", "brown", "pink", "teal", "magenta"]
     for idx, ind_name in enumerate(indicators_to_show):
-        col_idx = idx + 1
+        row_idx = (idx // max_cols) + 1
+        col_idx = (idx % max_cols) + 1
         color = colors[idx % len(colors)]
 
         fig.add_trace(go.Scatter(
@@ -205,46 +219,51 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
             mode="lines", name=f"{ind_name} (Baseline)",
             line={"color": color, "dash": "dash", "width": 1.5},
             showlegend=(idx == 0)
-        ), row=1, col=col_idx)
+        ), row=row_idx, col=col_idx)
 
         fig.add_trace(go.Scatter(
             x=df_orig_adj["Year"], y=df_orig_adj[ind_name],
             mode="lines", name=f"{ind_name} (Adjusted)",
             line={"color": color, "width": 2},
             showlegend=(idx == 0)
-        ), row=1, col=col_idx)
+        ), row=row_idx, col=col_idx)
 
-        fig.update_yaxes(title_text=ind_name, row=1, col=col_idx)
+        fig.update_yaxes(title_text=ind_name, row=row_idx, col=col_idx)
         fig.add_vline(x=2025, line_width=1, line_dash="dot", line_color="gray",
-                     row=1, col=col_idx)
+                     row=row_idx, col=col_idx)
 
-    # SOFI subplot
-    sofi_col = num_indicators + 1
+    # SOFI subplot (last position)
+    sofi_idx = len(indicators_to_show)
+    sofi_row = (sofi_idx // max_cols) + 1
+    sofi_col = (sofi_idx % max_cols) + 1
 
     fig.add_trace(go.Scatter(
         x=df_normalized["Year"], y=df_normalized["SOFI"],
         mode="lines", name="SOFI (Baseline)",
         line={"color": "lightgreen", "dash": "dash", "width": 2}
-    ), row=1, col=sofi_col)
+    ), row=sofi_row, col=sofi_col)
 
     fig.add_trace(go.Scatter(
         x=df_norm_adj["Year"], y=df_norm_adj["SOFI"],
         mode="lines", name="SOFI (Adjusted)",
         line={"color": "green", "width": 3}
-    ), row=1, col=sofi_col)
+    ), row=sofi_row, col=sofi_col)
 
     fig.add_vline(x=2025, line_width=1, line_dash="dot", line_color="gray",
-                  row=1, col=sofi_col, annotation_text="2025")
+                  row=sofi_row, col=sofi_col, annotation_text="2025")
 
     fig.update_xaxes(title_text="Year")
-    fig.update_yaxes(title_text="SOFI Index", row=1, col=sofi_col)
+    fig.update_yaxes(title_text="SOFI Index", row=sofi_row, col=sofi_col)
+
+    # Adjust height based on number of rows
+    plot_height = 400 * num_rows
 
     fig.update_layout(
         template="plotly_white",
         hovermode="x unified",
-        height=500,
+        height=plot_height,
         showlegend=True,
-        legend={"orientation": "h", "yanchor": "bottom", "y": -0.2,
+        legend={"orientation": "h", "yanchor": "bottom", "y": -0.05,
                 "xanchor": "center", "x": 0.5}
     )
 
