@@ -247,7 +247,7 @@ def render_tab_content(active_tab):
             line={"color": COLORS["success"], "width": 3},
             marker={"size": 6}
         ))
-        fig_sofi.add_vline(x=2025, line_dash="dot", line_color=COLORS["danger"],
+        fig_sofi.add_vline(x=2024, line_dash="dot", line_color=COLORS["danger"],
                           annotation_text="Projection Start")
         fig_sofi.update_layout(
             title={"text": "SOFI Index Over Time", "font": {"size": 18, "color": COLORS["primary"]}},
@@ -390,12 +390,24 @@ def render_tab_content(active_tab):
 
     elif active_tab == "tab-correlations":
         # Correlation with SOFI
-        sofi_corr = df_normalized[indicator_cols + ["SOFI"]].corr()["SOFI"][:-1].sort_values(ascending=False)
+        # Calculate correlation using normalized data
+        sofi_corr = df_normalized[indicator_cols + ["SOFI"]].corr()["SOFI"][:-1]
+        
+        # Invert correlation sign for negative indicators
+        # (because they're inverted in Sheet1, but we want to show real-world correlation)
+        sofi_corr_adjusted = sofi_corr.copy()
+        for ind in NEGATIVE_INDICATORS:
+            if ind in sofi_corr_adjusted.index:
+                sofi_corr_adjusted[ind] = -sofi_corr_adjusted[ind]
+        
+        # Sort by correlation value
+        sofi_corr_adjusted = sofi_corr_adjusted.sort_values(ascending=False)
+        
         fig_sofi_corr = go.Figure(go.Bar(
-            y=sofi_corr.index,
-            x=sofi_corr.values,
+            y=sofi_corr_adjusted.index,
+            x=sofi_corr_adjusted.values,
             orientation="h",
-            marker_color=[COLORS["success"] if x > 0 else COLORS["danger"] for x in sofi_corr.values]
+            marker_color=[COLORS["success"] if x > 0 else COLORS["danger"] for x in sofi_corr_adjusted.values]
         ))
         fig_sofi_corr.update_layout(
             title={"text": "Correlation with SOFI Index", "font": {"size": 18, "color": COLORS["primary"]}},
@@ -407,14 +419,6 @@ def render_tab_content(active_tab):
         )
 
         return html.Div([
-            # Correlation Bar Chart Card
-            html.Div([
-                dcc.Graph(figure=fig_sofi_corr, config={"displayModeBar": True, "displaylogo": False})
-            ], style={"backgroundColor": COLORS["white"], "borderRadius": "8px",
-                     "padding": "20px", "marginBottom": "25px",
-                     "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
-                     "border": f"1px solid {COLORS['border']}"}),
-            
             # Scatter Plot Analysis Card
             html.Div([
                 html.H4("Scatter Plot Analysis", 
@@ -446,7 +450,15 @@ def render_tab_content(active_tab):
                 ], style={"display": "flex", "marginBottom": "25px"}),
                 dcc.Graph(id="corr-scatter", config={"displayModeBar": True, "displaylogo": False})
             ], style={"backgroundColor": COLORS["white"], "borderRadius": "8px",
-                     "padding": "25px", "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                     "padding": "25px", "marginBottom": "25px",
+                     "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                     "border": f"1px solid {COLORS['border']}"}),
+            
+            # Correlation Bar Chart Card
+            html.Div([
+                dcc.Graph(figure=fig_sofi_corr, config={"displayModeBar": True, "displaylogo": False})
+            ], style={"backgroundColor": COLORS["white"], "borderRadius": "8px",
+                     "padding": "20px", "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
                      "border": f"1px solid {COLORS['border']}"})
         ])
     
@@ -642,7 +654,7 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
         ), row=row_idx, col=col_idx)
 
         fig.update_yaxes(title_text=ind_name, row=row_idx, col=col_idx)
-        fig.add_vline(x=2025, line_width=1, line_dash="dot", line_color="gray",
+        fig.add_vline(x=2024, line_width=1, line_dash="dot", line_color="gray",
                      row=row_idx, col=col_idx)
 
     # SOFI subplot (last position)
@@ -666,8 +678,8 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
         showlegend=False
     ), row=sofi_row, col=sofi_col)
 
-    fig.add_vline(x=2025, line_width=1, line_dash="dot", line_color="gray",
-                  row=sofi_row, col=sofi_col, annotation_text="2025")
+    fig.add_vline(x=2024, line_width=1, line_dash="dot", line_color="gray",
+                  row=sofi_row, col=sofi_col, annotation_text="2024")
 
     fig.update_xaxes(title_text="Year")
     fig.update_yaxes(title_text="SOFI Index", row=sofi_row, col=sofi_col)
@@ -723,7 +735,7 @@ def update_trends_multi(selected_indicators, view_type):
             marker={"size": 4}
         ))
     
-    fig.add_vline(x=2025, line_dash="dot", line_color="gray",
+    fig.add_vline(x=2024, line_dash="dot", line_color="gray",
                  annotation_text="Projection Start")
     
     y_title = "Normalized Value (0-1)" if view_type == "normalized" else "Original Value"
@@ -776,14 +788,16 @@ def update_analysis_comparison(year1, year2, view_type):
         x=values1,
         name=f"Year {int(year1)}",
         orientation="h",
-        marker_color="lightblue"
+        marker_color="#ffa600",  # Green
+        width=0.45  # Make bars fatter
     ))
     fig.add_trace(go.Bar(
         y=indicator_cols,
         x=values2,
         name=f"Year {int(year2)}",
         orientation="h",
-        marker_color="darkblue"
+        marker_color="#bc5090",  # Purple
+        width=0.45  # Make bars fatter
     ))
     
     x_title = "Normalized Value (0-1)" if view_type == "normalized" else "Original Value"
@@ -795,6 +809,8 @@ def update_analysis_comparison(year1, year2, view_type):
         template="plotly_white",
         height=800,
         barmode="group",
+        bargap=0.5,  # More space between indicator groups
+        bargroupgap=0.3,  # Space between bars within a group
         margin={"t": 60},
         font={"family": "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
               "color": COLORS["dark"]}
@@ -824,7 +840,8 @@ def update_corr_scatter(x_ind, y_ind):
         marker={"size": 10, "color": df_original["Year"], "colorscale": "Viridis",
                 "showscale": True, "colorbar": {"title": "Year"}},
         text=[f"Year: {int(y)}" for y in df_original["Year"]],
-        hovertemplate="%{text}<br>" + f"{x_ind}: %{{x}}<br>{y_ind}: %{{y}}<extra></extra>"
+        hovertemplate="%{text}<br>" + f"{x_ind}: %{{x}}<br>{y_ind}: %{{y}}<extra></extra>",
+        showlegend=False
     ))
     
     # Add trend line
@@ -848,7 +865,10 @@ def update_corr_scatter(x_ind, y_ind):
         height=600,
         margin={"t": 60},
         font={"family": "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-              "color": COLORS["dark"]}
+              "color": COLORS["dark"]},
+        legend={"yanchor": "top", "y": 0.99, "xanchor": "left", "x": 0.01,
+                "bgcolor": "rgba(255,255,255,0.8)", "bordercolor": COLORS["border"], 
+                "borderwidth": 1}
     )
     return fig
 
