@@ -13,12 +13,40 @@ df_normalized = pd.read_excel("data1.xlsx", sheet_name="Sheet1")
 # Sheet2: Original values (for display)
 df_original = pd.read_excel("data1.xlsx", sheet_name="Sheet2")
 
+# Sheet3: Weights for each indicator
+df_weights = pd.read_excel("data1.xlsx", sheet_name="Sheet3")
+
 # Automatically detect indicator columns (exclude 'Year' and 'SOFI' if present)
 indicator_cols = [col for col in df_normalized.columns if col not in ["Year", "SOFI"]]
 
-# Set equal weights for all indicators
-weights = np.array([1.0 / len(indicator_cols)] * len(indicator_cols))
+# Load weights from Sheet3
+# Drop any rows with NaN values and reset index
+df_weights_clean = df_weights.dropna().reset_index(drop=True)
 
+# Debug: print first few rows
+print("Sheet3 data:")
+print(df_weights_clean.head())
+print("\nIndicator columns:", indicator_cols)
+
+# Create weights dictionary from first two columns
+if len(df_weights_clean.columns) >= 2:
+    weights_dict = dict(zip(df_weights_clean.iloc[:, 0], df_weights_clean.iloc[:, 1]))
+else:
+    # Fallback to equal weights if Sheet3 structure is unexpected
+    print("Warning: Sheet3 doesn't have expected structure, using equal weights")
+    weights_dict = {}
+
+# Map weights to indicator columns
+weights_raw = np.array([weights_dict.get(col, 1.0 / len(indicator_cols)) for col in indicator_cols])
+
+# Normalize weights so they sum to 1 (as per SOFI formula)
+weights_sum = np.sum(weights_raw)
+weights = weights_raw / weights_sum if weights_sum > 0 else weights_raw
+
+print("\nRaw weights:", weights_raw)
+print("Sum of raw weights:", weights_sum)
+print("Normalized weights:", weights)
+print("Sum of normalized weights:", np.sum(weights))
 
 def compute_sofi(df, indicator_weights):
     """Calculate SOFI index from indicator values and weights."""
