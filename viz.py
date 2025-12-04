@@ -98,7 +98,7 @@ app.layout = html.Div([
             html.H1("SOFI Dashboard", 
                    style={"color": COLORS["white"], "margin": "0", "fontSize": "2.5rem",
                           "fontWeight": "600", "letterSpacing": "0.5px"}),
-            html.P("Sustainable Development Index - Interactive Analysis Platform",
+            html.P("State of the Future Index - Interactive Analysis Platform",
                   style={"color": COLORS["light"], "margin": "10px 0 0 0", 
                          "fontSize": "1.1rem", "fontWeight": "300"})
         ], style={"maxWidth": "1400px", "margin": "0 auto", "padding": "0 20px"})
@@ -119,12 +119,12 @@ app.layout = html.Div([
                            selected_style={"padding": "12px 24px", "fontWeight": "600",
                                          "borderTop": f"3px solid {COLORS['success']}",
                                          "backgroundColor": COLORS["white"]}),
-                    dcc.Tab(label="Indicator Analysis", value="tab-analysis",
+                    dcc.Tab(label="Correlations", value="tab-correlations",
                            style={"padding": "12px 24px", "fontWeight": "500"},
                            selected_style={"padding": "12px 24px", "fontWeight": "600",
                                          "borderTop": f"3px solid {COLORS['success']}",
                                          "backgroundColor": COLORS["white"]}),
-                    dcc.Tab(label="Correlations", value="tab-correlations",
+                    dcc.Tab(label="Indicator Analysis", value="tab-analysis",
                            style={"padding": "12px 24px", "fontWeight": "500"},
                            selected_style={"padding": "12px 24px", "fontWeight": "600",
                                          "borderTop": f"3px solid {COLORS['success']}",
@@ -307,7 +307,7 @@ def render_tab_content(active_tab):
                         dcc.Dropdown(
                             id="trends-indicator-selector",
                             options=[{"label": ind, "value": ind} for ind in indicator_cols],
-                            value=indicator_cols[:5],
+                            value=indicator_cols[:3],
                             multi=True,
                             style={"width": "500px"}
                         ),
@@ -788,8 +788,8 @@ def update_analysis_comparison(year1, year2, view_type):
         x=values1,
         name=f"Year {int(year1)}",
         orientation="h",
-        marker_color="#ffa600",  # Green
-        width=0.45  # Make bars fatter
+        marker_color="#6A5ACD",  # Green
+        width=0.35  # Make bars fatter
     ))
     fig.add_trace(go.Bar(
         y=indicator_cols,
@@ -797,7 +797,7 @@ def update_analysis_comparison(year1, year2, view_type):
         name=f"Year {int(year2)}",
         orientation="h",
         marker_color="#bc5090",  # Purple
-        width=0.45  # Make bars fatter
+        width=0.35  # Make bars fatter
     ))
     
     x_title = "Normalized Value (0-1)" if view_type == "normalized" else "Original Value"
