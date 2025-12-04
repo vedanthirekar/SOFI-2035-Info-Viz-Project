@@ -145,28 +145,215 @@ def render_tab_content(active_tab):
         ])
 
     elif active_tab == "tab-trends":
+        # SOFI over time chart
+        fig_sofi = go.Figure()
+        fig_sofi.add_trace(go.Scatter(
+            x=df_normalized["Year"],
+            y=df_normalized["SOFI"],
+            mode="lines+markers",
+            name="SOFI",
+            line={"color": "green", "width": 3},
+            marker={"size": 6}
+        ))
+        fig_sofi.add_vline(x=2025, line_dash="dot", line_color="red",
+                          annotation_text="Projection Start")
+        fig_sofi.update_layout(
+            title="SOFI Index Over Time",
+            xaxis_title="Year",
+            yaxis_title="SOFI Index",
+            template="plotly_white",
+            height=400
+        )
+
+        # Year-over-year changes
+        sofi_yoy = df_normalized["SOFI"].pct_change() * 100
+        fig_yoy = go.Figure()
+        fig_yoy.add_trace(go.Bar(
+            x=df_normalized["Year"][1:],
+            y=sofi_yoy[1:],
+            marker_color=["green" if x > 0 else "red" for x in sofi_yoy[1:]],
+            name="YoY Change"
+        ))
+        fig_yoy.update_layout(
+            title="Year-over-Year SOFI Change (%)",
+            xaxis_title="Year",
+            yaxis_title="% Change",
+            template="plotly_white",
+            height=400
+        )
+
+        # Multi-indicator trends
         return html.Div([
             html.H2("Historical Trends", style={"marginTop": "20px"}),
-            html.P("Visualize historical trends of SOFI and individual indicators over time."),
-            html.Div("Coming soon...", style={"padding": "40px", "textAlign": "center",
-                                             "color": "#666", "fontSize": "18px"})
+            
+            dcc.Graph(figure=fig_sofi),
+            dcc.Graph(figure=fig_yoy),
+            
+            html.H4("Individual Indicator Trends", style={"marginTop": "30px"}),
+            html.Label("Select Indicators to Display:"),
+            dcc.Dropdown(
+                id="trends-indicator-selector",
+                options=[{"label": ind, "value": ind} for ind in indicator_cols],
+                value=indicator_cols[:5],
+                multi=True,
+                style={"marginBottom": "20px"}
+            ),
+            dcc.Graph(id="trends-multi-indicator")
         ])
 
     elif active_tab == "tab-analysis":
+        # Get latest year data
+        latest_year = df_original["Year"].max()
+        latest_data = df_original[df_original["Year"] == latest_year].iloc[0]
+        
+        # Current indicator values
+        indicator_values = [latest_data[col] for col in indicator_cols]
+        fig_current = go.Figure(go.Bar(
+            y=indicator_cols,
+            x=indicator_values,
+            orientation="h",
+            marker_color="steelblue"
+        ))
+        fig_current.update_layout(
+            title=f"Current Indicator Values ({int(latest_year)})",
+            xaxis_title="Value",
+            yaxis_title="Indicator",
+            template="plotly_white",
+            height=800
+        )
+
+        # Contribution to SOFI (weighted)
+        latest_norm = df_normalized[df_normalized["Year"] == latest_year].iloc[0]
+        contributions = [latest_norm[col] * weights[i] for i, col in enumerate(indicator_cols)]
+        fig_contrib = go.Figure(go.Bar(
+            y=indicator_cols,
+            x=contributions,
+            orientation="h",
+            marker_color="green"
+        ))
+        fig_contrib.update_layout(
+            title=f"Weighted Contribution to SOFI ({int(latest_year)})",
+            xaxis_title="Contribution",
+            yaxis_title="Indicator",
+            template="plotly_white",
+            height=800
+        )
+
+        # Weights visualization
+        fig_weights = go.Figure(go.Bar(
+            y=indicator_cols,
+            x=weights,
+            orientation="h",
+            marker_color="orange"
+        ))
+        fig_weights.update_layout(
+            title="Indicator Weights",
+            xaxis_title="Weight",
+            yaxis_title="Indicator",
+            template="plotly_white",
+            height=800
+        )
+
         return html.Div([
             html.H2("Indicator Analysis", style={"marginTop": "20px"}),
-            html.P("Deep dive into individual indicators and their contributions to SOFI."),
-            html.Div("Coming soon...", style={"padding": "40px", "textAlign": "center",
-                                             "color": "#666", "fontSize": "18px"})
+            
+            html.Div([
+                html.Div([dcc.Graph(figure=fig_current)], style={"width": "33%"}),
+                html.Div([dcc.Graph(figure=fig_contrib)], style={"width": "33%"}),
+                html.Div([dcc.Graph(figure=fig_weights)], style={"width": "33%"}),
+            ], style={"display": "flex", "gap": "20px"}),
+            
+            html.H4("Compare Years", style={"marginTop": "30px"}),
+            html.Div([
+                html.Label("Select Year 1:"),
+                dcc.Dropdown(
+                    id="analysis-year1",
+                    options=[{"label": str(int(y)), "value": y} for y in df_original["Year"]],
+                    value=df_original["Year"].min(),
+                    style={"width": "200px", "marginRight": "20px"}
+                ),
+                html.Label("Select Year 2:"),
+                dcc.Dropdown(
+                    id="analysis-year2",
+                    options=[{"label": str(int(y)), "value": y} for y in df_original["Year"]],
+                    value=latest_year,
+                    style={"width": "200px"}
+                ),
+            ], style={"display": "flex", "alignItems": "center", "marginBottom": "20px"}),
+            dcc.Graph(id="analysis-comparison")
         ])
 
     elif active_tab == "tab-correlations":
+        # Calculate correlation matrix
+        corr_matrix = df_normalized[indicator_cols].corr()
+        
+        # Correlation heatmap
+        fig_heatmap = go.Figure(data=go.Heatmap(
+            z=corr_matrix.values,
+            x=indicator_cols,
+            y=indicator_cols,
+            colorscale="RdBu",
+            zmid=0,
+            text=np.round(corr_matrix.values, 2),
+            texttemplate="%{text}",
+            textfont={"size": 8},
+            colorbar={"title": "Correlation"}
+        ))
+        fig_heatmap.update_layout(
+            title="Indicator Correlation Matrix",
+            template="plotly_white",
+            height=900,
+            xaxis={"tickangle": 45},
+            yaxis={"tickangle": 0}
+        )
+
+        # Correlation with SOFI
+        sofi_corr = df_normalized[indicator_cols + ["SOFI"]].corr()["SOFI"][:-1].sort_values(ascending=False)
+        fig_sofi_corr = go.Figure(go.Bar(
+            y=sofi_corr.index,
+            x=sofi_corr.values,
+            orientation="h",
+            marker_color=["green" if x > 0 else "red" for x in sofi_corr.values]
+        ))
+        fig_sofi_corr.update_layout(
+            title="Correlation with SOFI Index",
+            xaxis_title="Correlation Coefficient",
+            yaxis_title="Indicator",
+            template="plotly_white",
+            height=800
+        )
+
         return html.Div([
             html.H2("Correlations", style={"marginTop": "20px"}),
-            html.P("Explore correlations between different indicators."),
-            html.Div("Coming soon...", style={"padding": "40px", "textAlign": "center",
-                                             "color": "#666", "fontSize": "18px"})
+            
+            dcc.Graph(figure=fig_sofi_corr),
+            dcc.Graph(figure=fig_heatmap),
+            
+            html.H4("Scatter Plot Analysis", style={"marginTop": "30px"}),
+            html.Div([
+                html.Div([
+                    html.Label("X-Axis Indicator:"),
+                    dcc.Dropdown(
+                        id="corr-x-indicator",
+                        options=[{"label": ind, "value": ind} for ind in indicator_cols],
+                        value=indicator_cols[0],
+                        style={"width": "300px"}
+                    ),
+                ], style={"marginRight": "20px"}),
+                html.Div([
+                    html.Label("Y-Axis Indicator:"),
+                    dcc.Dropdown(
+                        id="corr-y-indicator",
+                        options=[{"label": ind, "value": ind} for ind in indicator_cols],
+                        value=indicator_cols[1],
+                        style={"width": "300px"}
+                    ),
+                ]),
+            ], style={"display": "flex", "marginBottom": "20px"}),
+            dcc.Graph(id="corr-scatter")
         ])
+    
+    return html.Div()
 
 # Callback to add indicator
 @app.callback(
@@ -388,6 +575,131 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
     )
 
     return fig
+
+# Callback for trends multi-indicator chart
+@app.callback(
+    Output("trends-multi-indicator", "figure"),
+    Input("trends-indicator-selector", "value")
+)
+def update_trends_multi(selected_indicators):
+    """Update multi-indicator trends chart."""
+    if not selected_indicators:
+        return go.Figure()
+    
+    fig = go.Figure()
+    for ind in selected_indicators:
+        fig.add_trace(go.Scatter(
+            x=df_original["Year"],
+            y=df_original[ind],
+            mode="lines+markers",
+            name=ind,
+            line={"width": 2},
+            marker={"size": 4}
+        ))
+    
+    fig.add_vline(x=2025, line_dash="dot", line_color="gray",
+                 annotation_text="Projection Start")
+    fig.update_layout(
+        title="Selected Indicators Over Time",
+        xaxis_title="Year",
+        yaxis_title="Value",
+        template="plotly_white",
+        height=500,
+        hovermode="x unified"
+    )
+    return fig
+
+
+# Callback for analysis year comparison
+@app.callback(
+    Output("analysis-comparison", "figure"),
+    Input("analysis-year1", "value"),
+    Input("analysis-year2", "value")
+)
+def update_analysis_comparison(year1, year2):
+    """Compare indicators between two years."""
+    if year1 is None or year2 is None:
+        return go.Figure()
+    
+    data1 = df_original[df_original["Year"] == year1].iloc[0]
+    data2 = df_original[df_original["Year"] == year2].iloc[0]
+    
+    values1 = [data1[col] for col in indicator_cols]
+    values2 = [data2[col] for col in indicator_cols]
+    
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        y=indicator_cols,
+        x=values1,
+        name=f"Year {int(year1)}",
+        orientation="h",
+        marker_color="lightblue"
+    ))
+    fig.add_trace(go.Bar(
+        y=indicator_cols,
+        x=values2,
+        name=f"Year {int(year2)}",
+        orientation="h",
+        marker_color="darkblue"
+    ))
+    
+    fig.update_layout(
+        title=f"Indicator Comparison: {int(year1)} vs {int(year2)}",
+        xaxis_title="Value",
+        yaxis_title="Indicator",
+        template="plotly_white",
+        height=800,
+        barmode="group"
+    )
+    return fig
+
+
+# Callback for correlation scatter plot
+@app.callback(
+    Output("corr-scatter", "figure"),
+    Input("corr-x-indicator", "value"),
+    Input("corr-y-indicator", "value")
+)
+def update_corr_scatter(x_ind, y_ind):
+    """Update correlation scatter plot."""
+    if x_ind is None or y_ind is None:
+        return go.Figure()
+    
+    # Calculate correlation
+    corr = df_normalized[x_ind].corr(df_normalized[y_ind])
+    
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=df_original[x_ind],
+        y=df_original[y_ind],
+        mode="markers",
+        marker={"size": 10, "color": df_original["Year"], "colorscale": "Viridis",
+                "showscale": True, "colorbar": {"title": "Year"}},
+        text=[f"Year: {int(y)}" for y in df_original["Year"]],
+        hovertemplate="%{text}<br>" + f"{x_ind}: %{{x}}<br>{y_ind}: %{{y}}<extra></extra>"
+    ))
+    
+    # Add trend line
+    z = np.polyfit(df_original[x_ind], df_original[y_ind], 1)
+    p = np.poly1d(z)
+    x_trend = np.linspace(df_original[x_ind].min(), df_original[x_ind].max(), 100)
+    fig.add_trace(go.Scatter(
+        x=x_trend,
+        y=p(x_trend),
+        mode="lines",
+        name="Trend",
+        line={"color": "red", "dash": "dash"}
+    ))
+    
+    fig.update_layout(
+        title=f"Correlation: {x_ind} vs {y_ind} (r = {corr:.3f})",
+        xaxis_title=x_ind,
+        yaxis_title=y_ind,
+        template="plotly_white",
+        height=600
+    )
+    return fig
+
 
 if __name__ == "__main__":
     app.run(debug=True)
