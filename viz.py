@@ -190,14 +190,30 @@ def render_tab_content(active_tab):
             dcc.Graph(figure=fig_yoy),
             
             html.H4("Individual Indicator Trends", style={"marginTop": "30px"}),
-            html.Label("Select Indicators to Display:"),
-            dcc.Dropdown(
-                id="trends-indicator-selector",
-                options=[{"label": ind, "value": ind} for ind in indicator_cols],
-                value=indicator_cols[:5],
-                multi=True,
-                style={"marginBottom": "20px"}
-            ),
+            html.Div([
+                html.Div([
+                    html.Label("Select Indicators to Display:"),
+                    dcc.Dropdown(
+                        id="trends-indicator-selector",
+                        options=[{"label": ind, "value": ind} for ind in indicator_cols],
+                        value=indicator_cols[:5],
+                        multi=True,
+                        style={"width": "500px"}
+                    ),
+                ], style={"marginRight": "20px"}),
+                html.Div([
+                    html.Label("View:"),
+                    dcc.RadioItems(
+                        id="trends-view-type",
+                        options=[
+                            {"label": "Normalized (0-1 scale)", "value": "normalized"},
+                            {"label": "Original Values", "value": "original"}
+                        ],
+                        value="normalized",
+                        inline=True
+                    ),
+                ]),
+            ], style={"display": "flex", "alignItems": "flex-end", "marginBottom": "20px"}),
             dcc.Graph(id="trends-multi-indicator")
         ])
 
@@ -265,21 +281,37 @@ def render_tab_content(active_tab):
             
             html.H4("Compare Years", style={"marginTop": "30px"}),
             html.Div([
-                html.Label("Select Year 1:"),
-                dcc.Dropdown(
-                    id="analysis-year1",
-                    options=[{"label": str(int(y)), "value": y} for y in df_original["Year"]],
-                    value=df_original["Year"].min(),
-                    style={"width": "200px", "marginRight": "20px"}
-                ),
-                html.Label("Select Year 2:"),
-                dcc.Dropdown(
-                    id="analysis-year2",
-                    options=[{"label": str(int(y)), "value": y} for y in df_original["Year"]],
-                    value=latest_year,
-                    style={"width": "200px"}
-                ),
-            ], style={"display": "flex", "alignItems": "center", "marginBottom": "20px"}),
+                html.Div([
+                    html.Label("Select Year 1:"),
+                    dcc.Dropdown(
+                        id="analysis-year1",
+                        options=[{"label": str(int(y)), "value": y} for y in df_original["Year"]],
+                        value=df_original["Year"].min(),
+                        style={"width": "200px"}
+                    ),
+                ], style={"marginRight": "20px"}),
+                html.Div([
+                    html.Label("Select Year 2:"),
+                    dcc.Dropdown(
+                        id="analysis-year2",
+                        options=[{"label": str(int(y)), "value": y} for y in df_original["Year"]],
+                        value=latest_year,
+                        style={"width": "200px"}
+                    ),
+                ], style={"marginRight": "20px"}),
+                html.Div([
+                    html.Label("View:"),
+                    dcc.RadioItems(
+                        id="analysis-view-type",
+                        options=[
+                            {"label": "Normalized", "value": "normalized"},
+                            {"label": "Original", "value": "original"}
+                        ],
+                        value="normalized",
+                        inline=True
+                    ),
+                ]),
+            ], style={"display": "flex", "alignItems": "flex-end", "marginBottom": "20px"}),
             dcc.Graph(id="analysis-comparison")
         ])
 
@@ -579,18 +611,22 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
 # Callback for trends multi-indicator chart
 @app.callback(
     Output("trends-multi-indicator", "figure"),
-    Input("trends-indicator-selector", "value")
+    Input("trends-indicator-selector", "value"),
+    Input("trends-view-type", "value")
 )
-def update_trends_multi(selected_indicators):
+def update_trends_multi(selected_indicators, view_type):
     """Update multi-indicator trends chart."""
     if not selected_indicators:
         return go.Figure()
     
+    # Choose data source based on view type
+    df_source = df_normalized if view_type == "normalized" else df_original
+    
     fig = go.Figure()
     for ind in selected_indicators:
         fig.add_trace(go.Scatter(
-            x=df_original["Year"],
-            y=df_original[ind],
+            x=df_source["Year"],
+            y=df_source[ind],
             mode="lines+markers",
             name=ind,
             line={"width": 2},
@@ -599,10 +635,12 @@ def update_trends_multi(selected_indicators):
     
     fig.add_vline(x=2025, line_dash="dot", line_color="gray",
                  annotation_text="Projection Start")
+    
+    y_title = "Normalized Value (0-1)" if view_type == "normalized" else "Original Value"
     fig.update_layout(
-        title="Selected Indicators Over Time",
+        title=f"Selected Indicators Over Time ({view_type.title()} Values)",
         xaxis_title="Year",
-        yaxis_title="Value",
+        yaxis_title=y_title,
         template="plotly_white",
         height=500,
         hovermode="x unified"
@@ -614,15 +652,19 @@ def update_trends_multi(selected_indicators):
 @app.callback(
     Output("analysis-comparison", "figure"),
     Input("analysis-year1", "value"),
-    Input("analysis-year2", "value")
+    Input("analysis-year2", "value"),
+    Input("analysis-view-type", "value")
 )
-def update_analysis_comparison(year1, year2):
+def update_analysis_comparison(year1, year2, view_type):
     """Compare indicators between two years."""
     if year1 is None or year2 is None:
         return go.Figure()
     
-    data1 = df_original[df_original["Year"] == year1].iloc[0]
-    data2 = df_original[df_original["Year"] == year2].iloc[0]
+    # Choose data source based on view type
+    df_source = df_normalized if view_type == "normalized" else df_original
+    
+    data1 = df_source[df_source["Year"] == year1].iloc[0]
+    data2 = df_source[df_source["Year"] == year2].iloc[0]
     
     values1 = [data1[col] for col in indicator_cols]
     values2 = [data2[col] for col in indicator_cols]
@@ -643,9 +685,10 @@ def update_analysis_comparison(year1, year2):
         marker_color="darkblue"
     ))
     
+    x_title = "Normalized Value (0-1)" if view_type == "normalized" else "Original Value"
     fig.update_layout(
-        title=f"Indicator Comparison: {int(year1)} vs {int(year2)}",
-        xaxis_title="Value",
+        title=f"Indicator Comparison: {int(year1)} vs {int(year2)} ({view_type.title()} Values)",
+        xaxis_title=x_title,
         yaxis_title="Indicator",
         template="plotly_white",
         height=800,
