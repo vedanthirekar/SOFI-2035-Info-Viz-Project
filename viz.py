@@ -112,7 +112,19 @@ def render_tab_content(active_tab):
 
                     # Right side - Growth type and buttons
                     html.Div([
-                        html.Label("Growth Type", style={"fontWeight": "bold", "marginBottom": "10px"}),
+                        html.Div([
+                            html.Label("Growth Type", style={"fontWeight": "bold", "marginRight": "8px"}),
+                            html.Span("ⓘ",
+                                     title="One-time change: Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
+                                           "Sed do eiusmod tempor incididunt ut labore.\n\n"
+                                           "Compound growth: Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
+                                           "Ut enim ad minim veniam, quis nostrud exercitation.\n\n"
+                                           "Annual rate: Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
+                                           "Duis aute irure dolor in reprehenderit in voluptate.",
+                                     style={"cursor": "help", "color": "#1f77b4",
+                                            "fontSize": "16px", "fontWeight": "bold",
+                                            "marginLeft": "5px"}),
+                        ], style={"display": "flex", "alignItems": "center", "marginBottom": "10px"}),
                         dcc.RadioItems(
                             options=[
                                 {"label": "One-time change (apply % once to all future years)", "value": "linear"},
@@ -220,66 +232,11 @@ def render_tab_content(active_tab):
     elif active_tab == "tab-analysis":
         # Get latest year data
         latest_year = df_original["Year"].max()
-        latest_data = df_original[df_original["Year"] == latest_year].iloc[0]
-        
-        # Current indicator values
-        indicator_values = [latest_data[col] for col in indicator_cols]
-        fig_current = go.Figure(go.Bar(
-            y=indicator_cols,
-            x=indicator_values,
-            orientation="h",
-            marker_color="steelblue"
-        ))
-        fig_current.update_layout(
-            title=f"Current Indicator Values ({int(latest_year)})",
-            xaxis_title="Value",
-            yaxis_title="Indicator",
-            template="plotly_white",
-            height=800
-        )
-
-        # Contribution to SOFI (weighted)
-        latest_norm = df_normalized[df_normalized["Year"] == latest_year].iloc[0]
-        contributions = [latest_norm[col] * weights[i] for i, col in enumerate(indicator_cols)]
-        fig_contrib = go.Figure(go.Bar(
-            y=indicator_cols,
-            x=contributions,
-            orientation="h",
-            marker_color="green"
-        ))
-        fig_contrib.update_layout(
-            title=f"Weighted Contribution to SOFI ({int(latest_year)})",
-            xaxis_title="Contribution",
-            yaxis_title="Indicator",
-            template="plotly_white",
-            height=800
-        )
-
-        # Weights visualization
-        fig_weights = go.Figure(go.Bar(
-            y=indicator_cols,
-            x=weights,
-            orientation="h",
-            marker_color="orange"
-        ))
-        fig_weights.update_layout(
-            title="Indicator Weights",
-            xaxis_title="Weight",
-            yaxis_title="Indicator",
-            template="plotly_white",
-            height=800
-        )
 
         return html.Div([
             html.H2("Indicator Analysis", style={"marginTop": "20px"}),
             
-            html.Div([
-                html.Div([dcc.Graph(figure=fig_current)], style={"width": "33%"}),
-                html.Div([dcc.Graph(figure=fig_contrib)], style={"width": "33%"}),
-                html.Div([dcc.Graph(figure=fig_weights)], style={"width": "33%"}),
-            ], style={"display": "flex", "gap": "20px"}),
-            
-            html.H4("Compare Years", style={"marginTop": "30px"}),
+            html.H4("Compare Years", style={"marginTop": "20px"}),
             html.Div([
                 html.Div([
                     html.Label("Select Year 1:"),
@@ -316,29 +273,6 @@ def render_tab_content(active_tab):
         ])
 
     elif active_tab == "tab-correlations":
-        # Calculate correlation matrix
-        corr_matrix = df_normalized[indicator_cols].corr()
-        
-        # Correlation heatmap
-        fig_heatmap = go.Figure(data=go.Heatmap(
-            z=corr_matrix.values,
-            x=indicator_cols,
-            y=indicator_cols,
-            colorscale="RdBu",
-            zmid=0,
-            text=np.round(corr_matrix.values, 2),
-            texttemplate="%{text}",
-            textfont={"size": 8},
-            colorbar={"title": "Correlation"}
-        ))
-        fig_heatmap.update_layout(
-            title="Indicator Correlation Matrix",
-            template="plotly_white",
-            height=900,
-            xaxis={"tickangle": 45},
-            yaxis={"tickangle": 0}
-        )
-
         # Correlation with SOFI
         sofi_corr = df_normalized[indicator_cols + ["SOFI"]].corr()["SOFI"][:-1].sort_values(ascending=False)
         fig_sofi_corr = go.Figure(go.Bar(
@@ -359,7 +293,6 @@ def render_tab_content(active_tab):
             html.H2("Correlations", style={"marginTop": "20px"}),
             
             dcc.Graph(figure=fig_sofi_corr),
-            dcc.Graph(figure=fig_heatmap),
             
             html.H4("Scatter Plot Analysis", style={"marginTop": "30px"}),
             html.Div([
