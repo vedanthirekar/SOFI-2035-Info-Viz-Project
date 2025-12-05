@@ -40,6 +40,19 @@ NEGATIVE_INDICATORS = [
     "Refugees"
 ]
 
+# Indicator categories for organized viewing
+INDICATOR_CATEGORIES = {
+    "economic": ["GNI per capita, PPP ", "Income Inequality", "Unemployment", "Poverty", 
+                 "CPIA ", "FDI", "R&D "],
+    "social": ["Population growth", "Life expectancy", "Mortality rate, infant", 
+               "Undernourishment", "Health expenditure", "Physicians", "Drinking water",
+               "Literacy, adult", "School enrollment", "Gender equality"],
+    "environmental": ["Renewable freshwater", "Biocapacity ", "Forest area", "CO2 emissions",
+                     "Energy-Efficiency", "Renewable energy"],
+    "governance": ["Wars", "Terrorism Incidents", "Refugees", "Freedom Rights"],
+    "technology": ["Patents", "Internet Users"]
+}
+
 # Load weights from Sheet3
 # Drop any rows with NaN values and reset index
 df_weights_clean = df_weights.dropna().reset_index(drop=True)
@@ -365,7 +378,7 @@ def render_tab_content(active_tab):
                         dcc.Dropdown(
                             id="analysis-year1",
                             options=[{"label": str(int(y)), "value": y} for y in df_original["Year"]],
-                            value=df_original["Year"].min(),
+                            value=2005,
                             style={"width": "200px"}
                         ),
                     ], style={"marginRight": "30px"}),
@@ -376,8 +389,26 @@ def render_tab_content(active_tab):
                         dcc.Dropdown(
                             id="analysis-year2",
                             options=[{"label": str(int(y)), "value": y} for y in df_original["Year"]],
-                            value=latest_year,
+                            value=2025,
                             style={"width": "200px"}
+                        ),
+                    ], style={"marginRight": "30px"}),
+                    html.Div([
+                        html.Label("Category:", 
+                                  style={"fontWeight": "500", "marginBottom": "8px",
+                                         "display": "block", "color": COLORS["dark"]}),
+                        dcc.Dropdown(
+                            id="analysis-category",
+                            options=[
+                                {"label": "All Indicators", "value": "all"},
+                                {"label": "Economic", "value": "economic"},
+                                {"label": "Social", "value": "social"},
+                                {"label": "Environmental", "value": "environmental"},
+                                {"label": "Governance & Security", "value": "governance"},
+                                {"label": "Technology", "value": "technology"}
+                            ],
+                            value="economic",
+                            style={"width": "250px"}
                         ),
                     ], style={"marginRight": "30px"}),
                     html.Div([
@@ -774,12 +805,19 @@ def update_trends_multi(selected_indicators, view_type):
     Output("analysis-comparison", "figure"),
     Input("analysis-year1", "value"),
     Input("analysis-year2", "value"),
+    Input("analysis-category", "value"),
     Input("analysis-view-type", "value")
 )
-def update_analysis_comparison(year1, year2, view_type):
+def update_analysis_comparison(year1, year2, category, view_type):
     """Compare indicators between two years."""
     if year1 is None or year2 is None:
         return go.Figure()
+    
+    # Filter indicators by category
+    if category == "all":
+        selected_indicators = indicator_cols
+    else:
+        selected_indicators = INDICATOR_CATEGORIES.get(category, indicator_cols)
     
     # Choose data source based on view type
     df_source = df_normalized.copy() if view_type == "normalized" else df_original.copy()
@@ -794,35 +832,41 @@ def update_analysis_comparison(year1, year2, view_type):
     data1 = df_source[df_source["Year"] == year1].iloc[0]
     data2 = df_source[df_source["Year"] == year2].iloc[0]
     
-    values1 = [data1[col] for col in indicator_cols]
-    values2 = [data2[col] for col in indicator_cols]
+    # Use only selected indicators
+    values1 = [data1[col] for col in selected_indicators]
+    values2 = [data2[col] for col in selected_indicators]
     
     fig = go.Figure()
     fig.add_trace(go.Bar(
-        y=indicator_cols,
+        y=selected_indicators,
         x=values1,
         name=f"Year {int(year1)}",
         orientation="h",
-        marker_color="#6A5ACD",  # Green
+        marker_color="#2f4b7c",  # Green
         width=0.35  # Make bars fatter
     ))
     fig.add_trace(go.Bar(
-        y=indicator_cols,
+        y=selected_indicators,
         x=values2,
         name=f"Year {int(year2)}",
         orientation="h",
-        marker_color="#bc5090",  # Purple
+        marker_color="#FFD93D",  # Purple
         width=0.35  # Make bars fatter
     ))
     
-    x_title = "Normalized Value (0-1)" if view_type == "normalized" else "Original Value"
+    # Dynamic height based on number of indicators
+    chart_height = max(400, len(selected_indicators) * 25)
+    
+    category_label = category.title() if category != "all" else "All"
+    x_title = "Normalized Value (0-1)" if view_type == "normalized" else "Original Value (Log Scale)"
+    
     fig.update_layout(
-        title={"text": f"Indicator Comparison: {int(year1)} vs {int(year2)} ({view_type.title()} Values)",
+        title={"text": f"{category_label} Indicators: {int(year1)} vs {int(year2)} ({view_type.title()} Values)",
                "font": {"size": 18, "color": COLORS["primary"]}},
         xaxis_title=x_title,
         yaxis_title="Indicator",
         template="plotly_white",
-        height=800,
+        height=chart_height,
         barmode="group",
         bargap=0.5,  # More space between indicator groups
         bargroupgap=0.3,  # Space between bars within a group
@@ -830,6 +874,10 @@ def update_analysis_comparison(year1, year2, view_type):
         font={"family": "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
               "color": COLORS["dark"]}
     )
+    
+    # Use logarithmic scale for original values to show small values better
+    if view_type == "original":
+        fig.update_xaxes(type="log")
     return fig
 
 
