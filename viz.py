@@ -95,65 +95,101 @@ df_normalized["SOFI"] = compute_sofi(df_normalized[indicator_cols], weights)
 # ======== Dash App ========
 app = dash.Dash(__name__, suppress_callback_exceptions=True)
 
-# Custom CSS styles
+# Neutral Earth Tones - Sophisticated color palette
 COLORS = {
-    "primary": "#2C3E50",
-    "secondary": "#3498DB",
-    "success": "#27AE60",
-    "danger": "#E74C3C",
-    "warning": "#F39C12",
-    "light": "#ECF0F1",
-    "dark": "#34495E",
+    "black": "#0a0908",        # Complete absorption - authority, depth
+    "jet": "#22333b",          # Intense darkness - drama, mystery
+    "linen": "#eae0d5",        # Subtle creamy neutral - sophistication
+    "tan": "#c6ac8f",          # Soft sunlit neutral - warmth
+    "stone": "#5e503f",        # Solid mid-brown - grounded reliability
+    # Semantic mappings
+    "primary": "#22333b",      # Jet Black - main elements
+    "secondary": "#5e503f",    # Stone Brown - secondary elements
+    "accent": "#c6ac8f",       # Tan - highlights
+    "background": "#eae0d5",   # Soft Linen - page background
+    "card": "#FFFFFF",         # White cards
+    "text": "#0a0908",         # Black text
+    "text-light": "#5e503f",   # Stone Brown for lighter text
+    "border": "#c6ac8f",       # Tan borders
     "white": "#FFFFFF",
-    "background": "#F8F9FA",
-    "border": "#DEE2E6"
+    "success": "#5e503f",      # Stone Brown for positive
+    "danger": "#8b4513",       # Saddle brown for negative
+    "light": "#eae0d5"         # Linen
 }
 
 app.layout = html.Div([
-    # Header
+    # Elegant Header with Earth Tones
     html.Div([
         html.Div([
-            html.H1("SOFI Dashboard", 
-                   style={"color": COLORS["white"], "margin": "0", "fontSize": "2.5rem",
-                          "fontWeight": "600", "letterSpacing": "0.5px"}),
-            html.P("State of the Future Index - Interactive Analysis Platform",
-                  style={"color": COLORS["light"], "margin": "10px 0 0 0", 
-                         "fontSize": "1.1rem", "fontWeight": "300"})
-        ], style={"maxWidth": "1400px", "margin": "0 auto", "padding": "0 20px"})
-    ], style={"background": f"linear-gradient(135deg, {COLORS['primary']} 0%, {COLORS['dark']} 100%)",
-              "padding": "40px 20px", "marginBottom": "0", "boxShadow": "0 2px 10px rgba(0,0,0,0.1)"}),
+            html.Div([
+                html.H1("SOFI Dashboard", 
+                       style={"color": COLORS["linen"], "margin": "0", "fontSize": "2.8rem",
+                              "fontWeight": "600", "letterSpacing": "2px",
+                              "fontFamily": "'Georgia', serif"}),
+                html.P("State of the Future Index — Interactive Analysis Platform",
+                      style={"color": COLORS["tan"], "margin": "15px 0 0 0", 
+                             "fontSize": "1.1rem", "fontWeight": "400", "letterSpacing": "1px"}),
+                html.Div([
+                    html.Span("29 Indicators", style={"marginRight": "30px", "borderRight": f"1px solid {COLORS['stone']}", "paddingRight": "30px"}),
+                    html.Span("1990–2035", style={"marginRight": "30px", "borderRight": f"1px solid {COLORS['stone']}", "paddingRight": "30px"}),
+                    html.Span("Predictive Analytics")
+                ], style={"marginTop": "20px", "fontSize": "0.9rem", "color": COLORS["tan"], 
+                         "letterSpacing": "1px", "textTransform": "uppercase"})
+            ])
+        ], style={"maxWidth": "1400px", "margin": "0 auto", "padding": "0 30px"})
+    ], style={"background": COLORS["jet"],
+              "padding": "55px 20px", "marginBottom": "0", 
+              "boxShadow": "0 4px 20px rgba(0,0,0,0.2)"}),
 
-    # Tabs
+    # Elegant Tabs with Earth Tones
     html.Div([
         dcc.Tabs(id="tabs", value="tab-trends", 
                 children=[
                     dcc.Tab(label="Historical Trends", value="tab-trends",
-                           style={"padding": "12px 24px", "fontWeight": "500"},
-                           selected_style={"padding": "12px 24px", "fontWeight": "600",
-                                         "borderTop": f"3px solid {COLORS['success']}",
-                                         "backgroundColor": COLORS["white"]}),
+                           style={"padding": "16px 32px", "fontWeight": "500", "fontSize": "0.95rem",
+                                  "border": "none", "borderBottom": f"3px solid transparent",
+                                  "backgroundColor": COLORS["linen"], "color": COLORS["stone"],
+                                  "letterSpacing": "0.5px"},
+                           selected_style={"padding": "16px 32px", "fontWeight": "600", "fontSize": "0.95rem",
+                                         "borderBottom": f"3px solid {COLORS['stone']}",
+                                         "backgroundColor": COLORS["white"], "color": COLORS["jet"],
+                                         "letterSpacing": "0.5px"}),
                     dcc.Tab(label="What-If Simulator", value="tab-whatif",
-                           style={"padding": "12px 24px", "fontWeight": "500"},
-                           selected_style={"padding": "12px 24px", "fontWeight": "600",
-                                         "borderTop": f"3px solid {COLORS['success']}",
-                                         "backgroundColor": COLORS["white"]}),
+                           style={"padding": "16px 32px", "fontWeight": "500", "fontSize": "0.95rem",
+                                  "border": "none", "borderBottom": f"3px solid transparent",
+                                  "backgroundColor": COLORS["linen"], "color": COLORS["stone"],
+                                  "letterSpacing": "0.5px"},
+                           selected_style={"padding": "16px 32px", "fontWeight": "600", "fontSize": "0.95rem",
+                                         "borderBottom": f"3px solid {COLORS['stone']}",
+                                         "backgroundColor": COLORS["white"], "color": COLORS["jet"],
+                                         "letterSpacing": "0.5px"}),
                     dcc.Tab(label="Correlations", value="tab-correlations",
-                           style={"padding": "12px 24px", "fontWeight": "500"},
-                           selected_style={"padding": "12px 24px", "fontWeight": "600",
-                                         "borderTop": f"3px solid {COLORS['success']}",
-                                         "backgroundColor": COLORS["white"]}),
+                           style={"padding": "16px 32px", "fontWeight": "500", "fontSize": "0.95rem",
+                                  "border": "none", "borderBottom": f"3px solid transparent",
+                                  "backgroundColor": COLORS["linen"], "color": COLORS["stone"],
+                                  "letterSpacing": "0.5px"},
+                           selected_style={"padding": "16px 32px", "fontWeight": "600", "fontSize": "0.95rem",
+                                         "borderBottom": f"3px solid {COLORS['stone']}",
+                                         "backgroundColor": COLORS["white"], "color": COLORS["jet"],
+                                         "letterSpacing": "0.5px"}),
                     dcc.Tab(label="Indicator Analysis", value="tab-analysis",
-                           style={"padding": "12px 24px", "fontWeight": "500"},
-                           selected_style={"padding": "12px 24px", "fontWeight": "600",
-                                         "borderTop": f"3px solid {COLORS['success']}",
-                                         "backgroundColor": COLORS["white"]}),
+                           style={"padding": "16px 32px", "fontWeight": "500", "fontSize": "0.95rem",
+                                  "border": "none", "borderBottom": f"3px solid transparent",
+                                  "backgroundColor": COLORS["linen"], "color": COLORS["stone"],
+                                  "letterSpacing": "0.5px"},
+                           selected_style={"padding": "16px 32px", "fontWeight": "600", "fontSize": "0.95rem",
+                                         "borderBottom": f"3px solid {COLORS['stone']}",
+                                         "backgroundColor": COLORS["white"], "color": COLORS["jet"],
+                                         "letterSpacing": "0.5px"}),
                 ],
                 style={"maxWidth": "1400px", "margin": "0 auto"}),
-    ], style={"backgroundColor": COLORS["white"], "boxShadow": "0 2px 4px rgba(0,0,0,0.05)"}),
+    ], style={"backgroundColor": COLORS["linen"], "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+              "borderBottom": f"1px solid {COLORS['tan']}"}),
 
-    # Content
-    html.Div(id="tab-content", style={"maxWidth": "1400px", "margin": "0 auto", "padding": "30px 20px"})
-], style={"backgroundColor": COLORS["background"], "minHeight": "100vh", "fontFamily": "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"})
+    # Content area
+    html.Div(id="tab-content", style={"maxWidth": "1400px", "margin": "0 auto", "padding": "40px 30px"})
+], style={"backgroundColor": COLORS["linen"], "minHeight": "100vh", 
+          "fontFamily": "'Georgia', 'Times New Roman', serif"})
 
 
 # Callback to render tab content
@@ -171,8 +207,8 @@ def render_tab_content(active_tab):
                     # Left side - Indicator selection
                     html.Div([
                         html.H4("Add Indicators to Adjust", 
-                               style={"color": COLORS["primary"], "marginBottom": "15px", 
-                                      "fontSize": "1.1rem", "fontWeight": "600"}),
+                               style={"color": "#22333b", "marginBottom": "15px", 
+                                      "fontSize": "1.1rem", "fontWeight": "600", "letterSpacing": "0.5px"}),
 
                         # Dropdown to select indicator
                         html.Div([
@@ -183,10 +219,10 @@ def render_tab_content(active_tab):
                                 style={"width": "400px", "marginRight": "10px"}
                             ),
                             html.Button("Add Indicator", id="add-indicator-btn", n_clicks=0,
-                                       style={"padding": "10px 20px", "backgroundColor": COLORS["secondary"],
-                                              "color": COLORS["white"], "border": "none", 
-                                              "borderRadius": "5px", "cursor": "pointer",
-                                              "fontWeight": "500", "transition": "all 0.3s"})
+                                       style={"padding": "10px 20px", "backgroundColor": "#5e503f",
+                                              "color": "#eae0d5", "border": "none", 
+                                              "borderRadius": "4px", "cursor": "pointer",
+                                              "fontWeight": "500", "letterSpacing": "0.5px"})
                         ], style={"display": "flex", "alignItems": "center", "marginBottom": "20px"}),
 
                         # Container for active indicator inputs
@@ -235,22 +271,22 @@ def render_tab_content(active_tab):
                         html.Div([
                             html.Button("Clear All", id="clear-all-btn", n_clicks=0,
                                        style={"marginRight": "10px", "padding": "10px 20px",
-                                              "width": "120px", "backgroundColor": COLORS["white"],
-                                              "color": COLORS["danger"], "border": f"2px solid {COLORS['danger']}",
-                                              "borderRadius": "5px", "cursor": "pointer",
-                                              "fontWeight": "500", "transition": "all 0.3s"}),
+                                              "width": "120px", "backgroundColor": "#eae0d5",
+                                              "color": "#5e503f", "border": "2px solid #c6ac8f",
+                                              "borderRadius": "4px", "cursor": "pointer",
+                                              "fontWeight": "500", "letterSpacing": "0.5px"}),
                             html.Button("Apply Changes", id="apply-button", n_clicks=0,
-                                       style={"padding": "10px 20px", "backgroundColor": COLORS["success"],
-                                              "color": COLORS["white"], "border": "none", 
-                                              "width": "140px", "borderRadius": "5px",
+                                       style={"padding": "10px 20px", "backgroundColor": "#22333b",
+                                              "color": "#eae0d5", "border": "none", 
+                                              "width": "140px", "borderRadius": "4px",
                                               "cursor": "pointer", "fontWeight": "500",
-                                              "transition": "all 0.3s", "boxShadow": "0 2px 4px rgba(0,0,0,0.1)"})
+                                              "letterSpacing": "0.5px"})
                         ]),
                     ], style={"minWidth": "320px"}),
                 ], style={"display": "flex"}),
-            ], style={"padding": "25px", "backgroundColor": COLORS["white"],
-                      "borderRadius": "8px", "marginBottom": "25px",
-                      "boxShadow": "0 2px 8px rgba(0,0,0,0.08)", "border": f"1px solid {COLORS['border']}"}),
+            ], style={"padding": "30px", "backgroundColor": "#FFFFFF",
+                      "borderRadius": "4px", "marginBottom": "25px",
+                      "boxShadow": "0 2px 12px rgba(0,0,0,0.06)", "border": "1px solid #c6ac8f"}),
 
             # Store to track active indicators
             dcc.Store(id="active-indicators-store", data=[]),
@@ -258,9 +294,9 @@ def render_tab_content(active_tab):
             # Graph Card
             html.Div([
                 dcc.Graph(id="sofi-graph", config={"displayModeBar": True, "displaylogo": False})
-            ], style={"backgroundColor": COLORS["white"], "borderRadius": "8px",
-                     "padding": "20px", "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
-                     "border": f"1px solid {COLORS['border']}"})
+            ], style={"backgroundColor": "#FFFFFF", "borderRadius": "4px",
+                     "padding": "20px", "boxShadow": "0 2px 12px rgba(0,0,0,0.06)",
+                     "border": "1px solid #c6ac8f"})
         ])
 
     elif active_tab == "tab-trends":
@@ -271,13 +307,13 @@ def render_tab_content(active_tab):
             y=df_normalized["SOFI"],
             mode="lines+markers",
             name="SOFI",
-            line={"color": COLORS["success"], "width": 3},
-            marker={"size": 6}
+            line={"color": "#5e503f", "width": 3},  # Stone Brown
+            marker={"size": 6, "color": "#5e503f"}
         ))
-        fig_sofi.add_vline(x=2024, line_dash="dot", line_color=COLORS["danger"],
+        fig_sofi.add_vline(x=2024, line_dash="dot", line_color="#c6ac8f",  # Tan
                           annotation_text="Projection Start")
         fig_sofi.update_layout(
-            title={"text": "SOFI Index Over Time", "font": {"size": 18, "color": COLORS["primary"]}},
+            title={"text": "SOFI Index Over Time", "font": {"size": 18, "color": "#22333b"}},
             xaxis_title="Year",
             yaxis_title="SOFI Index",
             template="plotly_white",
@@ -291,11 +327,11 @@ def render_tab_content(active_tab):
         fig_yoy.add_trace(go.Bar(
             x=df_normalized["Year"][1:],
             y=sofi_yoy[1:],
-            marker_color=[COLORS["success"] if x > 0 else COLORS["danger"] for x in sofi_yoy[1:]],
+            marker_color=["#5e503f" if x > 0 else "#c6ac8f" for x in sofi_yoy[1:]],  # Stone/Tan
             name="YoY Change"
         ))
         fig_yoy.update_layout(
-            title={"text": "Year-over-Year SOFI Change (%)", "font": {"size": 18, "color": COLORS["primary"]}},
+            title={"text": "Year-over-Year SOFI Change (%)", "font": {"size": 18, "color": "#22333b"}},
             xaxis_title="Year",
             yaxis_title="% Change",
             template="plotly_white",
@@ -308,29 +344,29 @@ def render_tab_content(active_tab):
             # SOFI Over Time Card
             html.Div([
                 dcc.Graph(figure=fig_sofi, config={"displayModeBar": True, "displaylogo": False})
-            ], style={"backgroundColor": COLORS["white"], "borderRadius": "8px",
+            ], style={"backgroundColor": "#FFFFFF", "borderRadius": "4px",
                      "padding": "20px", "marginBottom": "25px",
-                     "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
-                     "border": f"1px solid {COLORS['border']}"}),
+                     "boxShadow": "0 2px 12px rgba(0,0,0,0.06)",
+                     "border": "1px solid #c6ac8f"}),
             
             # YoY Changes Card
             html.Div([
                 dcc.Graph(figure=fig_yoy, config={"displayModeBar": True, "displaylogo": False})
-            ], style={"backgroundColor": COLORS["white"], "borderRadius": "8px",
+            ], style={"backgroundColor": "#FFFFFF", "borderRadius": "4px",
                      "padding": "20px", "marginBottom": "25px",
-                     "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
-                     "border": f"1px solid {COLORS['border']}"}),
+                     "boxShadow": "0 2px 12px rgba(0,0,0,0.06)",
+                     "border": "1px solid #c6ac8f"}),
             
             # Multi-Indicator Trends Card
             html.Div([
                 html.H4("Individual Indicator Trends", 
-                       style={"color": COLORS["primary"], "marginBottom": "20px",
-                              "fontSize": "1.2rem", "fontWeight": "600"}),
+                       style={"color": "#22333b", "marginBottom": "20px",
+                              "fontSize": "1.2rem", "fontWeight": "600", "letterSpacing": "0.5px"}),
                 html.Div([
                     html.Div([
                         html.Label("Select Indicators to Display:", 
                                   style={"fontWeight": "500", "marginBottom": "8px",
-                                         "display": "block", "color": COLORS["dark"]}),
+                                         "display": "block", "color": "#5e503f"}),
                         dcc.Dropdown(
                             id="trends-indicator-selector",
                             options=[{"label": ind, "value": ind} for ind in indicator_cols],
@@ -342,7 +378,7 @@ def render_tab_content(active_tab):
                     html.Div([
                         html.Label("View:", 
                                   style={"fontWeight": "500", "marginBottom": "8px",
-                                         "display": "block", "color": COLORS["dark"]}),
+                                         "display": "block", "color": "#5e503f"}),
                         dcc.RadioItems(
                             id="trends-view-type",
                             options=[
@@ -356,9 +392,9 @@ def render_tab_content(active_tab):
                     ]),
                 ], style={"display": "flex", "alignItems": "flex-end", "marginBottom": "25px"}),
                 dcc.Graph(id="trends-multi-indicator", config={"displayModeBar": True, "displaylogo": False})
-            ], style={"backgroundColor": COLORS["white"], "borderRadius": "8px",
-                     "padding": "25px", "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
-                     "border": f"1px solid {COLORS['border']}"})
+            ], style={"backgroundColor": "#FFFFFF", "borderRadius": "4px",
+                     "padding": "25px", "boxShadow": "0 2px 12px rgba(0,0,0,0.06)",
+                     "border": "1px solid #c6ac8f"})
         ])
 
     elif active_tab == "tab-analysis":
@@ -368,13 +404,13 @@ def render_tab_content(active_tab):
         return html.Div([
             html.Div([
                 html.H4("Compare Years", 
-                       style={"color": COLORS["primary"], "marginBottom": "20px",
-                              "fontSize": "1.2rem", "fontWeight": "600"}),
+                       style={"color": "#22333b", "marginBottom": "20px",
+                              "fontSize": "1.2rem", "fontWeight": "600", "letterSpacing": "0.5px"}),
                 html.Div([
                     html.Div([
                         html.Label("Select Year 1:", 
                                   style={"fontWeight": "500", "marginBottom": "8px",
-                                         "display": "block", "color": COLORS["dark"]}),
+                                         "display": "block", "color": "#5e503f"}),
                         dcc.Dropdown(
                             id="analysis-year1",
                             options=[{"label": str(int(y)), "value": y} for y in df_original["Year"]],
@@ -385,7 +421,7 @@ def render_tab_content(active_tab):
                     html.Div([
                         html.Label("Select Year 2:", 
                                   style={"fontWeight": "500", "marginBottom": "8px",
-                                         "display": "block", "color": COLORS["dark"]}),
+                                         "display": "block", "color": "#5e503f"}),
                         dcc.Dropdown(
                             id="analysis-year2",
                             options=[{"label": str(int(y)), "value": y} for y in df_original["Year"]],
@@ -396,7 +432,7 @@ def render_tab_content(active_tab):
                     html.Div([
                         html.Label("Category:", 
                                   style={"fontWeight": "500", "marginBottom": "8px",
-                                         "display": "block", "color": COLORS["dark"]}),
+                                         "display": "block", "color": "#5e503f"}),
                         dcc.Dropdown(
                             id="analysis-category",
                             options=[
@@ -414,7 +450,7 @@ def render_tab_content(active_tab):
                     html.Div([
                         html.Label("View:", 
                                   style={"fontWeight": "500", "marginBottom": "8px",
-                                         "display": "block", "color": COLORS["dark"]}),
+                                         "display": "block", "color": "#5e503f"}),
                         dcc.RadioItems(
                             id="analysis-view-type",
                             options=[
@@ -428,9 +464,9 @@ def render_tab_content(active_tab):
                     ]),
                 ], style={"display": "flex", "alignItems": "flex-end", "marginBottom": "25px"}),
                 dcc.Graph(id="analysis-comparison", config={"displayModeBar": True, "displaylogo": False})
-            ], style={"backgroundColor": COLORS["white"], "borderRadius": "8px",
-                     "padding": "25px", "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
-                     "border": f"1px solid {COLORS['border']}"})
+            ], style={"backgroundColor": "#FFFFFF", "borderRadius": "4px",
+                     "padding": "25px", "boxShadow": "0 2px 12px rgba(0,0,0,0.06)",
+                     "border": "1px solid #c6ac8f"})
         ])
 
     elif active_tab == "tab-correlations":
@@ -452,10 +488,10 @@ def render_tab_content(active_tab):
             y=sofi_corr_adjusted.index,
             x=sofi_corr_adjusted.values,
             orientation="h",
-            marker_color=[COLORS["success"] if x > 0 else COLORS["danger"] for x in sofi_corr_adjusted.values]
+            marker_color=["#5e503f" if x > 0 else "#c6ac8f" for x in sofi_corr_adjusted.values]  # Stone/Tan
         ))
         fig_sofi_corr.update_layout(
-            title={"text": "Correlation with SOFI Index", "font": {"size": 18, "color": COLORS["primary"]}},
+            title={"text": "Correlation with SOFI Index", "font": {"size": 18, "color": "#22333b"}},
             xaxis_title="Correlation Coefficient",
             yaxis_title="Indicator",
             template="plotly_white",
@@ -467,13 +503,13 @@ def render_tab_content(active_tab):
             # Scatter Plot Analysis Card
             html.Div([
                 html.H4("Scatter Plot Analysis", 
-                       style={"color": COLORS["primary"], "marginBottom": "20px",
-                              "fontSize": "1.2rem", "fontWeight": "600"}),
+                       style={"color": "#22333b", "marginBottom": "20px",
+                              "fontSize": "1.2rem", "fontWeight": "600", "letterSpacing": "0.5px"}),
                 html.Div([
                     html.Div([
                         html.Label("X-Axis Indicator:", 
                                   style={"fontWeight": "500", "marginBottom": "8px",
-                                         "display": "block", "color": COLORS["dark"]}),
+                                         "display": "block", "color": "#5e503f"}),
                         dcc.Dropdown(
                             id="corr-x-indicator",
                             options=[{"label": ind, "value": ind} for ind in indicator_cols],
@@ -484,7 +520,7 @@ def render_tab_content(active_tab):
                     html.Div([
                         html.Label("Y-Axis Indicator:", 
                                   style={"fontWeight": "500", "marginBottom": "8px",
-                                         "display": "block", "color": COLORS["dark"]}),
+                                         "display": "block", "color": "#5e503f"}),
                         dcc.Dropdown(
                             id="corr-y-indicator",
                             options=[{"label": ind, "value": ind} for ind in indicator_cols],
@@ -494,17 +530,17 @@ def render_tab_content(active_tab):
                     ]),
                 ], style={"display": "flex", "marginBottom": "25px"}),
                 dcc.Graph(id="corr-scatter", config={"displayModeBar": True, "displaylogo": False})
-            ], style={"backgroundColor": COLORS["white"], "borderRadius": "8px",
+            ], style={"backgroundColor": "#FFFFFF", "borderRadius": "4px",
                      "padding": "25px", "marginBottom": "25px",
-                     "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
-                     "border": f"1px solid {COLORS['border']}"}),
+                     "boxShadow": "0 2px 12px rgba(0,0,0,0.06)",
+                     "border": "1px solid #c6ac8f"}),
             
             # Correlation Bar Chart Card
             html.Div([
                 dcc.Graph(figure=fig_sofi_corr, config={"displayModeBar": True, "displaylogo": False})
-            ], style={"backgroundColor": COLORS["white"], "borderRadius": "8px",
-                     "padding": "20px", "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
-                     "border": f"1px solid {COLORS['border']}"})
+            ], style={"backgroundColor": "#FFFFFF", "borderRadius": "4px",
+                     "padding": "20px", "boxShadow": "0 2px 12px rgba(0,0,0,0.06)",
+                     "border": "1px solid #c6ac8f"})
         ])
     
     return html.Div()
@@ -548,9 +584,9 @@ def update_active_indicators_ui(active_indicators, current_values, current_ids):
     """Generate UI elements for active indicators."""
     if not active_indicators:
         return html.Div("No indicators added yet. Select one from the dropdown above.",
-                       style={"color": "#6C757D", "fontStyle": "italic", "padding": "15px",
-                              "backgroundColor": "#F8F9FA", "borderRadius": "5px",
-                              "border": "1px dashed #DEE2E6"})
+                       style={"color": "#5e503f", "fontStyle": "italic", "padding": "15px",
+                              "backgroundColor": "#eae0d5", "borderRadius": "4px",
+                              "border": "1px dashed #c6ac8f"})
 
     # Create a map of existing values
     value_map = {}
@@ -566,26 +602,26 @@ def update_active_indicators_ui(active_indicators, current_values, current_ids):
         indicator_divs.append(
             html.Div([
                 html.Label(ind, style={"fontWeight": "500", "marginRight": "10px",
-                                      "minWidth": "250px", "color": COLORS["dark"]}),
+                                      "minWidth": "250px", "color": "#22333b"}),
                 dcc.Input(
                     id={"type": "indicator-input", "index": ind},
                     type="number",
                     value=existing_value,
                     step=0.5,
                     style={"width": "80px", "marginRight": "5px", "padding": "6px 10px",
-                           "border": f"1px solid {COLORS['border']}", "borderRadius": "4px"}
+                           "border": "1px solid #c6ac8f", "borderRadius": "4px"}
                 ),
-                html.Span("%", style={"marginRight": "10px", "color": COLORS["dark"],
+                html.Span("%", style={"marginRight": "10px", "color": "#5e503f",
                                      "fontWeight": "500"}),
                 html.Button("×", id={"type": "remove-indicator-btn", "index": ind},
-                           style={"padding": "4px 10px", "backgroundColor": COLORS["danger"],
-                                  "color": COLORS["white"], "border": "none",
+                           style={"padding": "4px 10px", "backgroundColor": "#5e503f",
+                                  "color": "#eae0d5", "border": "none",
                                   "borderRadius": "4px", "cursor": "pointer",
                                   "fontWeight": "600", "fontSize": "14px",
                                   "transition": "all 0.3s"})
             ], style={"display": "flex", "alignItems": "center", "marginBottom": "10px",
-                     "padding": "8px", "backgroundColor": COLORS["light"],
-                     "borderRadius": "5px", "border": f"1px solid {COLORS['border']}"})
+                     "padding": "10px 12px", "backgroundColor": "#eae0d5",
+                     "borderRadius": "4px", "border": "1px solid #c6ac8f"})
         )
 
     return indicator_divs
@@ -686,7 +722,7 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
         fig.add_trace(go.Scatter(
             x=df_original["Year"], y=df_original[ind_name],
             mode="lines", name="Baseline",
-            line={"color": "red", "dash": "dash", "width": 1.5},
+            line={"color": "#c6ac8f", "dash": "dash", "width": 1.5},  # Tan baseline
             legendgroup="baseline",
             showlegend=(idx == 0)
         ), row=row_idx, col=col_idx)
@@ -694,14 +730,14 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
         fig.add_trace(go.Scatter(
             x=df_orig_adj["Year"], y=df_orig_adj[ind_name],
             mode="lines", name="Adjusted",
-            line={"color": "red", "width": 2},
+            line={"color": "#5e503f", "width": 2},  # Stone Brown adjusted
             legendgroup="adjusted",
             showlegend=(idx == 0)
         ), row=row_idx, col=col_idx)
 
         fig.update_yaxes(title_text=ind_name, row=row_idx, col=col_idx)
-        fig.add_vline(x=2024, line_width=1, line_dash="dot", line_color="gray",
-                     row=row_idx, col=col_idx)
+        fig.add_vline(x=2024, line_width=1, line_dash="dot", line_color="#c6ac8f",
+                     row=row_idx, col=col_idx)  # Tan
 
     # SOFI subplot (last position)
     sofi_idx = len(indicators_to_show)
@@ -711,7 +747,7 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
     fig.add_trace(go.Scatter(
         x=df_normalized["Year"], y=df_normalized["SOFI"],
         mode="lines", name="Baseline",
-        line={"color": "green", "dash": "dash", "width": 2},
+        line={"color": "#c6ac8f", "dash": "dash", "width": 2},  # Tan baseline
         legendgroup="baseline",
         showlegend=False
     ), row=sofi_row, col=sofi_col)
@@ -719,13 +755,13 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
     fig.add_trace(go.Scatter(
         x=df_norm_adj["Year"], y=df_norm_adj["SOFI"],
         mode="lines", name="Adjusted",
-        line={"color": "green", "width": 3},
+        line={"color": "#22333b", "width": 3},  # Jet Black adjusted
         legendgroup="adjusted",
         showlegend=False
     ), row=sofi_row, col=sofi_col)
 
-    fig.add_vline(x=2024, line_width=1, line_dash="dot", line_color="gray",
-                  row=sofi_row, col=sofi_col, annotation_text="2024")
+    fig.add_vline(x=2024, line_width=1, line_dash="dot", line_color="#c6ac8f",
+                  row=sofi_row, col=sofi_col, annotation_text="2024")  # Tan
 
     fig.update_xaxes(title_text="Year")
     fig.update_yaxes(title_text="SOFI Index", row=sofi_row, col=sofi_col)
@@ -739,11 +775,11 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
         height=plot_height,
         showlegend=True,
         legend={"orientation": "h", "yanchor": "top", "y": -0.05,
-                "xanchor": "center", "x": 0.5, "bgcolor": "rgba(255,255,255,0.8)",
-                "bordercolor": COLORS["border"], "borderwidth": 1},
+                "xanchor": "center", "x": 0.5, "bgcolor": "rgba(234,224,213,0.9)",
+                "bordercolor": "#c6ac8f", "borderwidth": 1},
         margin={"b": 100, "t": 50, "l": 60, "r": 40},
-        font={"family": "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-              "color": COLORS["dark"]}
+        font={"family": "'Georgia', 'Times New Roman', serif",
+              "color": "#5e503f"}
     )
 
     return fig
@@ -781,21 +817,21 @@ def update_trends_multi(selected_indicators, view_type):
             marker={"size": 4}
         ))
     
-    fig.add_vline(x=2024, line_dash="dot", line_color="gray",
-                 annotation_text="Projection Start")
+    fig.add_vline(x=2024, line_dash="dot", line_color="#c6ac8f",
+                 annotation_text="Projection Start")  # Tan
     
     y_title = "Normalized Value (0-1)" if view_type == "normalized" else "Original Value"
     fig.update_layout(
         title={"text": f"Selected Indicators Over Time ({view_type.title()} Values)",
-               "font": {"size": 18, "color": COLORS["primary"]}},
+               "font": {"size": 18, "color": "#22333b"}},
         xaxis_title="Year",
         yaxis_title=y_title,
         template="plotly_white",
         height=500,
         hovermode="x unified",
         margin={"t": 60},
-        font={"family": "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-              "color": COLORS["dark"]}
+        font={"family": "'Georgia', 'Times New Roman', serif",
+              "color": "#5e503f"}
     )
     return fig
 
@@ -842,7 +878,7 @@ def update_analysis_comparison(year1, year2, category, view_type):
         x=values1,
         name=f"Year {int(year1)}",
         orientation="h",
-        marker_color="#2f4b7c",  # Green
+        marker_color="#5e503f",  # Stone Brown
         width=0.35  # Make bars fatter
     ))
     fig.add_trace(go.Bar(
@@ -850,7 +886,7 @@ def update_analysis_comparison(year1, year2, category, view_type):
         x=values2,
         name=f"Year {int(year2)}",
         orientation="h",
-        marker_color="#FFD93D",  # Purple
+        marker_color="#c6ac8f",  # Tan
         width=0.35  # Make bars fatter
     ))
     
@@ -862,7 +898,7 @@ def update_analysis_comparison(year1, year2, category, view_type):
     
     fig.update_layout(
         title={"text": f"{category_label} Indicators: {int(year1)} vs {int(year2)} ({view_type.title()} Values)",
-               "font": {"size": 18, "color": COLORS["primary"]}},
+               "font": {"size": 18, "color": "#22333b"}},
         xaxis_title=x_title,
         yaxis_title="Indicator",
         template="plotly_white",
@@ -871,8 +907,8 @@ def update_analysis_comparison(year1, year2, category, view_type):
         bargap=0.5,  # More space between indicator groups
         bargroupgap=0.3,  # Space between bars within a group
         margin={"t": 60},
-        font={"family": "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-              "color": COLORS["dark"]}
+        font={"family": "'Georgia', 'Times New Roman', serif",
+              "color": "#5e503f"}
     )
     
     # Use logarithmic scale for original values to show small values better
@@ -916,21 +952,21 @@ def update_corr_scatter(x_ind, y_ind):
         y=p(x_trend),
         mode="lines",
         name="Trend",
-        line={"color": "red", "dash": "dash"}
+        line={"color": "#5e503f", "dash": "dash"}  # Stone Brown trend
     ))
     
     fig.update_layout(
         title={"text": f"Correlation: {x_ind} vs {y_ind} (r = {corr:.3f})",
-               "font": {"size": 18, "color": COLORS["primary"]}},
+               "font": {"size": 18, "color": "#22333b"}},
         xaxis_title=x_ind,
         yaxis_title=y_ind,
         template="plotly_white",
         height=600,
         margin={"t": 60},
-        font={"family": "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-              "color": COLORS["dark"]},
+        font={"family": "'Georgia', 'Times New Roman', serif",
+              "color": "#5e503f"},
         legend={"yanchor": "top", "y": 0.99, "xanchor": "left", "x": 0.01,
-                "bgcolor": "rgba(255,255,255,0.8)", "bordercolor": COLORS["border"], 
+                "bgcolor": "rgba(234,224,213,0.9)", "bordercolor": "#c6ac8f", 
                 "borderwidth": 1}
     )
     return fig
