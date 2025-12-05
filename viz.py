@@ -5,16 +5,21 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import pandas as pd
 import numpy as np
+import os
 
 # ======== Load Data from Excel ========
+# Get the directory where this script is located
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_FILE = os.path.join(BASE_DIR, "data1.xlsx")
+
 # Sheet1: Normalized values (for SOFI calculation)
-df_normalized = pd.read_excel("data1.xlsx", sheet_name="Sheet1")
+df_normalized = pd.read_excel(DATA_FILE, sheet_name="Sheet1")
 
 # Sheet2: Original values (for display)
-df_original = pd.read_excel("data1.xlsx", sheet_name="Sheet2")
+df_original = pd.read_excel(DATA_FILE, sheet_name="Sheet2")
 
 # Sheet3: Weights for each indicator
-df_weights = pd.read_excel("data1.xlsx", sheet_name="Sheet3")
+df_weights = pd.read_excel(DATA_FILE, sheet_name="Sheet3")
 
 # Automatically detect indicator columns (exclude 'Year' and 'SOFI' if present)
 indicator_cols = [col for col in df_normalized.columns if col not in ["Year", "SOFI"]]
@@ -872,6 +877,8 @@ def update_corr_scatter(x_ind, y_ind):
     )
     return fig
 
+
+server = app.server
 
 if __name__ == "__main__":
     app.run(debug=True)
