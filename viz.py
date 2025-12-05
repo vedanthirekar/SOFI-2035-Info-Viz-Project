@@ -318,7 +318,9 @@ def render_tab_content(active_tab):
             yaxis_title="SOFI Index",
             template="plotly_white",
             height=400,
-            margin={"t": 60}
+            margin={"t": 60},
+            font={"family": "'Georgia', 'Times New Roman', serif",
+                  "color": "#5e503f"}
         )
 
         # Year-over-year changes
@@ -336,7 +338,9 @@ def render_tab_content(active_tab):
             yaxis_title="% Change",
             template="plotly_white",
             height=400,
-            margin={"t": 60}
+            margin={"t": 60},
+            font={"family": "'Georgia', 'Times New Roman', serif",
+                  "color": "#5e503f"}
         )
 
         # Multi-indicator trends
@@ -496,7 +500,9 @@ def render_tab_content(active_tab):
             yaxis_title="Indicator",
             template="plotly_white",
             height=800,
-            margin={"t": 60}
+            margin={"t": 60},
+            font={"family": "'Georgia', 'Times New Roman', serif",
+                  "color": "#5e503f"}
         )
 
         return html.Div([
