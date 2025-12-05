@@ -188,21 +188,30 @@ def render_tab_content(active_tab):
                                       style={"fontWeight": "600", "marginRight": "8px", 
                                              "color": COLORS["primary"], "fontSize": "1rem"}),
                             html.Span("ⓘ",
-                                     title="One-time change: Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
-                                           "Sed do eiusmod tempor incididunt ut labore.\n\n"
-                                           "Compound growth: Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
-                                           "Ut enim ad minim veniam, quis nostrud exercitation.\n\n"
-                                           "Annual rate: Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
-                                           "Duis aute irure dolor in reprehenderit in voluptate.",
+                                     title="ONE-TIME CHANGE (Shift):\n"
+                                           "Shifts the predicted curve by X% for all future years.\n"
+                                           "Example: 2024=100, Predicted 2025=105. Apply +10%.\n"
+                                           "Result: 2025=115.5, 2026=121, 2027=126.5\n"
+                                           "Use for: Policy changes, infrastructure improvements.\n\n"
+                                           "COMPOUND GROWTH (Exponential):\n"
+                                           "Growth builds on itself year-over-year from 2024 baseline.\n"
+                                           "Example: 2024=100. Apply +10% compound.\n"
+                                           "Result: 2025=110, 2026=121, 2027=133.1\n"
+                                           "Use for: Technology adoption, economic growth.\n\n"
+                                           "ANNUAL RATE (Linear):\n"
+                                           "Adds X% of 2024 baseline value every year.\n"
+                                           "Example: 2024=100. Apply +10% annual.\n"
+                                           "Result: 2025=110, 2026=120, 2027=130\n"
+                                           "Use for: Steady improvements, gradual policy changes.",
                                      style={"cursor": "help", "color": COLORS["secondary"],
                                             "fontSize": "16px", "fontWeight": "bold",
                                             "marginLeft": "5px"}),
                         ], style={"display": "flex", "alignItems": "center", "marginBottom": "12px"}),
                         dcc.RadioItems(
                             options=[
-                                {"label": "One-time change (apply % once to all future years)", "value": "linear"},
-                                {"label": "Compound growth (% compounds year-over-year)", "value": "exponential"},
-                                {"label": "Annual rate (% growth/decline per year from 2025)", "value": "annual_rate"}
+                                {"label": "One-time change (shift predicted curve by X%)", "value": "linear"},
+                                {"label": "Compound growth (exponential from 2024 baseline)", "value": "exponential"},
+                                {"label": "Annual rate (linear growth from 2024 baseline)", "value": "annual_rate"}
                             ],
                             value="linear",
                             id="growth-type",
@@ -582,27 +591,28 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
             change_norm = -change if is_negative else change
             change_orig = change  # Original values always follow user input
             
+            # Get the 2024 value (last historical point) for all growth types
+            year_2024_idx = df_norm_adj[df_norm_adj["Year"] == 2024].index
+            if len(year_2024_idx) > 0:
+                base_value_norm = df_norm_adj.loc[year_2024_idx[0], ind_name]
+                base_value_orig = df_orig_adj.loc[year_2024_idx[0], ind_name]
+            else:
+                # If 2024 doesn't exist, use first future year as base
+                base_value_norm = df_norm_adj.loc[future_years[0], ind_name]
+                base_value_orig = df_orig_adj.loc[future_years[0], ind_name]
+            
             if growth_type == "linear":
                 # One-time change: apply same % to all future years
                 df_norm_adj.loc[future_years, ind_name] *= (1 + change_norm / 100)
                 df_orig_adj.loc[future_years, ind_name] *= (1 + change_orig / 100)
             elif growth_type == "exponential":
-                # Compound growth: % compounds year-over-year
+                # Compound growth: % compounds year-over-year from 2024 baseline
                 for j, idx in enumerate(future_years):
-                    df_norm_adj.loc[idx, ind_name] *= (1 + change_norm / 100) ** (j + 1)
-                    df_orig_adj.loc[idx, ind_name] *= (1 + change_orig / 100) ** (j + 1)
+                    years_from_start = j + 1
+                    df_norm_adj.loc[idx, ind_name] = base_value_norm * (1 + change_norm / 100) ** years_from_start
+                    df_orig_adj.loc[idx, ind_name] = base_value_orig * (1 + change_orig / 100) ** years_from_start
             else:  # annual_rate
-                # Annual rate: continuous linear growth/decline from 2025
-                # Get the 2024 value (last historical point)
-                year_2024_idx = df_norm_adj[df_norm_adj["Year"] == 2024].index
-                if len(year_2024_idx) > 0:
-                    base_value_norm = df_norm_adj.loc[year_2024_idx[0], ind_name]
-                    base_value_orig = df_orig_adj.loc[year_2024_idx[0], ind_name]
-                else:
-                    # If 2024 doesn't exist, use first future year as base
-                    base_value_norm = df_norm_adj.loc[future_years[0], ind_name]
-                    base_value_orig = df_orig_adj.loc[future_years[0], ind_name]
-                
+                # Annual rate: continuous linear growth/decline from 2024 baseline
                 # Apply linear rate: each year adds the % to the previous year
                 for j, idx in enumerate(future_years):
                     years_from_start = j + 1
