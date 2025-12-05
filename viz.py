@@ -129,12 +129,12 @@ app.layout = html.Div([
                 html.P("State of the Future Index — Interactive Analysis Platform",
                       style={"color": COLORS["tan"], "margin": "15px 0 0 0", 
                              "fontSize": "1.1rem", "fontWeight": "400", "letterSpacing": "1px"}),
-                html.Div([
-                    html.Span("29 Indicators", style={"marginRight": "30px", "borderRight": f"1px solid {COLORS['stone']}", "paddingRight": "30px"}),
-                    html.Span("1990–2035", style={"marginRight": "30px", "borderRight": f"1px solid {COLORS['stone']}", "paddingRight": "30px"}),
-                    html.Span("Predictive Analytics")
-                ], style={"marginTop": "20px", "fontSize": "0.9rem", "color": COLORS["tan"], 
-                         "letterSpacing": "1px", "textTransform": "uppercase"})
+                # html.Div([
+                #     html.Span("29 Indicators", style={"marginRight": "30px", "borderRight": f"1px solid {COLORS['stone']}", "paddingRight": "30px"}),
+                #     html.Span("1990–2035", style={"marginRight": "30px", "borderRight": f"1px solid {COLORS['stone']}", "paddingRight": "30px"}),
+                #     html.Span("Predictive Analytics")
+                # ], style={"marginTop": "20px", "fontSize": "0.9rem", "color": COLORS["tan"], 
+                #          "letterSpacing": "1px", "textTransform": "uppercase"})
             ])
         ], style={"maxWidth": "1400px", "margin": "0 auto", "padding": "0 30px"})
     ], style={"background": COLORS["jet"],
@@ -774,10 +774,10 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
         hovermode="x unified",
         height=plot_height,
         showlegend=True,
-        legend={"orientation": "h", "yanchor": "top", "y": -0.05,
+        legend={"orientation": "h", "yanchor": "top", "y": -0.35,
                 "xanchor": "center", "x": 0.5, "bgcolor": "rgba(234,224,213,0.9)",
                 "bordercolor": "#c6ac8f", "borderwidth": 1},
-        margin={"b": 100, "t": 50, "l": 60, "r": 40},
+        margin={"b": 150, "t": 50, "l": 60, "r": 40},
         font={"family": "'Georgia', 'Times New Roman', serif",
               "color": "#5e503f"}
     )
@@ -795,6 +795,20 @@ def update_trends_multi(selected_indicators, view_type):
     if not selected_indicators:
         return go.Figure()
     
+    # Earth tone color palette for multi-line charts
+    EARTH_TONE_COLORS = [
+        "#5e503f",  # Stone Brown
+        "#22333b",  # Jet Black
+        "#c6ac8f",  # Tan
+        "#8b7355",  # Warm Brown
+        "#6b5b4f",  # Dark Taupe
+        "#a08060",  # Camel
+        "#4a4238",  # Dark Stone
+        "#9c8b7a",  # Warm Gray
+        "#7d6b5d",  # Mocha
+        "#b5a08e",  # Sand
+    ]
+    
     # Choose data source based on view type
     df_source = df_normalized.copy() if view_type == "normalized" else df_original.copy()
     
@@ -807,14 +821,15 @@ def update_trends_multi(selected_indicators, view_type):
                 df_source[ind] = 1 - df_source[ind]
     
     fig = go.Figure()
-    for ind in selected_indicators:
+    for i, ind in enumerate(selected_indicators):
+        color = EARTH_TONE_COLORS[i % len(EARTH_TONE_COLORS)]
         fig.add_trace(go.Scatter(
             x=df_source["Year"],
             y=df_source[ind],
             mode="lines+markers",
             name=ind,
-            line={"width": 2},
-            marker={"size": 4}
+            line={"width": 2, "color": color},
+            marker={"size": 4, "color": color}
         ))
     
     fig.add_vline(x=2024, line_dash="dot", line_color="#c6ac8f",
