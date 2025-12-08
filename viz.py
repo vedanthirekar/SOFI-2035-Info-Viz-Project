@@ -414,21 +414,6 @@ def render_tab_content(active_tab):
                             style={"width": "500px"}
                         ),
                     ], style={"marginRight": "30px"}),
-                    html.Div([
-                        html.Label("View:", 
-                                  style={"fontWeight": "500", "marginBottom": "8px",
-                                         "display": "block", "color": "#5e503f"}),
-                        dcc.RadioItems(
-                            id="trends-view-type",
-                            options=[
-                                {"label": "Normalized (0-1 scale)", "value": "normalized"},
-                                {"label": "Original Values", "value": "original"}
-                            ],
-                            value="normalized",
-                            inline=True,
-                            style={"lineHeight": "1.8"}
-                        ),
-                    ]),
                 ], style={"display": "flex", "alignItems": "flex-end", "marginBottom": "25px"}),
                 dcc.Graph(id="trends-multi-indicator", config={"displayModeBar": True, "displaylogo": False})
             ], style={"backgroundColor": "#FFFFFF", "borderRadius": "4px",
@@ -828,10 +813,9 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
 # Callback for trends multi-indicator chart
 @app.callback(
     Output("trends-multi-indicator", "figure"),
-    Input("trends-indicator-selector", "value"),
-    Input("trends-view-type", "value")
+    Input("trends-indicator-selector", "value")
 )
-def update_trends_multi(selected_indicators, view_type):
+def update_trends_multi(selected_indicators):
     """Update multi-indicator trends chart."""
     if not selected_indicators:
         return go.Figure()
@@ -839,16 +823,14 @@ def update_trends_multi(selected_indicators, view_type):
     # Pastel color palette for multi-line charts - distinguishable and pleasant
     CHART_COLORS = PASTEL_COLORS
     
-    # Choose data source based on view type
-    df_source = df_normalized.copy() if view_type == "normalized" else df_original.copy()
+    # Use normalized data only for display
+    df_source = df_normalized.copy()
     
-    # For normalized view, invert negative indicators back to match original direction
-    # (Sheet1 has them inverted for SOFI calculation, but for display we want original direction)
-    if view_type == "normalized":
-        for ind in NEGATIVE_INDICATORS:
-            if ind in df_source.columns:
-                # Invert: 1 - value (assuming 0-1 normalization)
-                df_source[ind] = 1 - df_source[ind]
+    # Invert negative indicators back to match original direction for display
+    for ind in NEGATIVE_INDICATORS:
+        if ind in df_source.columns:
+            # Invert: 1 - value (assuming 0-1 normalization)
+            df_source[ind] = 1 - df_source[ind]
     
     fig = go.Figure()
     for i, ind in enumerate(selected_indicators):
@@ -865,12 +847,11 @@ def update_trends_multi(selected_indicators, view_type):
     fig.add_vline(x=2024, line_dash="dot", line_color="#c6ac8f",
                  annotation_text="Forecast Start")  # Tan
     
-    y_title = "Normalized Value (0-1)" if view_type == "normalized" else "Original Value"
     fig.update_layout(
-        title={"text": f"Selected Indicators Over Time ({view_type.title()} Values)",
+        title={"text": "Selected Indicators Over Time (Normalized Values)",
                "font": {"size": 18, "color": "#22333b"}},
         xaxis_title="Year",
-        yaxis_title=y_title,
+        yaxis_title="Normalized Value (0-1)",
         template="plotly_white",
         height=500,
         hovermode="x unified",
