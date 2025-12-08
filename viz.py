@@ -316,16 +316,37 @@ def render_tab_content(active_tab):
     elif active_tab == "tab-trends":
         # SOFI over time chart
         fig_sofi = go.Figure()
+        
+        # Split data at forecast start (2024), include 2024 in both for continuity
+        historical_data = df_normalized[df_normalized["Year"] <= 2024]
+        forecast_data = df_normalized[df_normalized["Year"] >= 2024]
+        
+        # Historical data (blue) - includes 2024 for continuity
         fig_sofi.add_trace(go.Scatter(
-            x=df_normalized["Year"],
-            y=df_normalized["SOFI"],
+            x=historical_data["Year"],
+            y=historical_data["SOFI"],
             mode="lines+markers",
             name="SOFI",
             line={"color": "#7eb8da", "width": 3},  # Pastel blue
-            marker={"size": 6, "color": "#7eb8da"}
+            marker={"size": 6, "color": "#7eb8da"},
+            showlegend=False,
+            hovertemplate="Year: %{x}<br>SOFI Index: %{y:.3f}<extra></extra>"
         ))
+        
+        # Forecast data (red) - starts at 2024 for continuity
+        fig_sofi.add_trace(go.Scatter(
+            x=forecast_data["Year"],
+            y=forecast_data["SOFI"],
+            mode="lines+markers",
+            name="SOFI",
+            line={"color": "#e88b84", "width": 3},  # Pastel red/coral
+            marker={"size": 6, "color": "#e88b84"},
+            showlegend=False,
+            hovertemplate="Year: %{x}<br>SOFI Index: %{y:.3f}<extra></extra>"
+        ))
+        
         fig_sofi.add_vline(x=2024, line_dash="dot", line_color="#c6ac8f",  # Tan
-                          annotation_text="Projection Start")
+                          annotation_text="Forecast Start")
         fig_sofi.update_layout(
             title={"text": "SOFI Index Over Time", "font": {"size": 18, "color": "#22333b"}},
             xaxis_title="Year",
@@ -842,7 +863,7 @@ def update_trends_multi(selected_indicators, view_type):
         ))
     
     fig.add_vline(x=2024, line_dash="dot", line_color="#c6ac8f",
-                 annotation_text="Projection Start")  # Tan
+                 annotation_text="Forecast Start")  # Tan
     
     y_title = "Normalized Value (0-1)" if view_type == "normalized" else "Original Value"
     fig.update_layout(
