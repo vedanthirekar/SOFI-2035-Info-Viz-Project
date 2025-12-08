@@ -95,7 +95,7 @@ df_normalized["SOFI"] = compute_sofi(df_normalized[indicator_cols], weights)
 # ======== Dash App ========
 app = dash.Dash(__name__, suppress_callback_exceptions=True)
 
-# Neutral Earth Tones - Sophisticated color palette
+# Pastel Color Palette - Soft, distinguishable colors
 COLORS = {
     "black": "#0a0908",        # Complete absorption - authority, depth
     "jet": "#22333b",          # Intense darkness - drama, mystery
@@ -112,10 +112,24 @@ COLORS = {
     "text-light": "#5e503f",   # Stone Brown for lighter text
     "border": "#c6ac8f",       # Tan borders
     "white": "#FFFFFF",
-    "success": "#5e503f",      # Stone Brown for positive
-    "danger": "#8b4513",       # Saddle brown for negative
+    "success": "#77c98d",      # Pastel green for positive
+    "danger": "#e88b84",       # Pastel coral/red for negative
     "light": "#eae0d5"         # Linen
 }
+
+# Pastel color palette for multi-line charts - distinguishable and pleasant
+PASTEL_COLORS = [
+    "#7eb8da",  # Soft blue
+    "#e88b84",  # Soft coral
+    "#77c98d",  # Soft mint green
+    "#c9a0dc",  # Soft lavender
+    "#f5b971",  # Soft orange
+    "#85d4ce",  # Soft teal
+    "#f0a6ca",  # Soft pink
+    "#a8d08d",  # Soft sage
+    "#ffd93d",  # Soft yellow
+    "#b5b5e0",  # Soft periwinkle
+]
 
 app.layout = html.Div([
     # Elegant Header with Earth Tones
@@ -307,8 +321,8 @@ def render_tab_content(active_tab):
             y=df_normalized["SOFI"],
             mode="lines+markers",
             name="SOFI",
-            line={"color": "#5e503f", "width": 3},  # Stone Brown
-            marker={"size": 6, "color": "#5e503f"}
+            line={"color": "#7eb8da", "width": 3},  # Pastel blue
+            marker={"size": 6, "color": "#7eb8da"}
         ))
         fig_sofi.add_vline(x=2024, line_dash="dot", line_color="#c6ac8f",  # Tan
                           annotation_text="Projection Start")
@@ -329,7 +343,7 @@ def render_tab_content(active_tab):
         fig_yoy.add_trace(go.Bar(
             x=df_normalized["Year"][1:],
             y=sofi_yoy[1:],
-            marker_color=["#5e503f" if x > 0 else "#c6ac8f" for x in sofi_yoy[1:]],  # Stone/Tan
+            marker_color=["#77c98d" if x > 0 else "#e88b84" for x in sofi_yoy[1:]],  # Pastel green/red
             name="YoY Change"
         ))
         fig_yoy.update_layout(
@@ -492,7 +506,7 @@ def render_tab_content(active_tab):
             y=sofi_corr_adjusted.index,
             x=sofi_corr_adjusted.values,
             orientation="h",
-            marker_color=["#5e503f" if x > 0 else "#c6ac8f" for x in sofi_corr_adjusted.values]  # Stone/Tan
+            marker_color=["#77c98d" if x > 0 else "#e88b84" for x in sofi_corr_adjusted.values]  # Pastel green/red
         ))
         fig_sofi_corr.update_layout(
             title={"text": "Correlation with SOFI Index", "font": {"size": 18, "color": "#22333b"}},
@@ -720,7 +734,7 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
         vertical_spacing=0.15
     )
 
-    # Add traces for each modified indicator (all in red)
+    # Add traces for each modified indicator
     for idx, ind_name in enumerate(indicators_to_show):
         row_idx = (idx // max_cols) + 1
         col_idx = (idx % max_cols) + 1
@@ -728,7 +742,7 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
         fig.add_trace(go.Scatter(
             x=df_original["Year"], y=df_original[ind_name],
             mode="lines", name="Baseline",
-            line={"color": "#c6ac8f", "dash": "dash", "width": 1.5},  # Tan baseline
+            line={"color": "#b5b5e0", "dash": "dash", "width": 1.5},  # Pastel periwinkle baseline
             legendgroup="baseline",
             showlegend=(idx == 0)
         ), row=row_idx, col=col_idx)
@@ -736,7 +750,7 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
         fig.add_trace(go.Scatter(
             x=df_orig_adj["Year"], y=df_orig_adj[ind_name],
             mode="lines", name="Adjusted",
-            line={"color": "#5e503f", "width": 2},  # Stone Brown adjusted
+            line={"color": "#7eb8da", "width": 2},  # Pastel blue adjusted
             legendgroup="adjusted",
             showlegend=(idx == 0)
         ), row=row_idx, col=col_idx)
@@ -753,7 +767,7 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
     fig.add_trace(go.Scatter(
         x=df_normalized["Year"], y=df_normalized["SOFI"],
         mode="lines", name="Baseline",
-        line={"color": "#c6ac8f", "dash": "dash", "width": 2},  # Tan baseline
+        line={"color": "#b5b5e0", "dash": "dash", "width": 2},  # Pastel periwinkle baseline
         legendgroup="baseline",
         showlegend=False
     ), row=sofi_row, col=sofi_col)
@@ -761,7 +775,7 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
     fig.add_trace(go.Scatter(
         x=df_norm_adj["Year"], y=df_norm_adj["SOFI"],
         mode="lines", name="Adjusted",
-        line={"color": "#22333b", "width": 3},  # Jet Black adjusted
+        line={"color": "#77c98d", "width": 3},  # Pastel green adjusted
         legendgroup="adjusted",
         showlegend=False
     ), row=sofi_row, col=sofi_col)
@@ -801,19 +815,8 @@ def update_trends_multi(selected_indicators, view_type):
     if not selected_indicators:
         return go.Figure()
     
-    # Earth tone color palette for multi-line charts
-    EARTH_TONE_COLORS = [
-        "#5e503f",  # Stone Brown
-        "#22333b",  # Jet Black
-        "#c6ac8f",  # Tan
-        "#8b7355",  # Warm Brown
-        "#6b5b4f",  # Dark Taupe
-        "#a08060",  # Camel
-        "#4a4238",  # Dark Stone
-        "#9c8b7a",  # Warm Gray
-        "#7d6b5d",  # Mocha
-        "#b5a08e",  # Sand
-    ]
+    # Pastel color palette for multi-line charts - distinguishable and pleasant
+    CHART_COLORS = PASTEL_COLORS
     
     # Choose data source based on view type
     df_source = df_normalized.copy() if view_type == "normalized" else df_original.copy()
@@ -828,7 +831,7 @@ def update_trends_multi(selected_indicators, view_type):
     
     fig = go.Figure()
     for i, ind in enumerate(selected_indicators):
-        color = EARTH_TONE_COLORS[i % len(EARTH_TONE_COLORS)]
+        color = CHART_COLORS[i % len(CHART_COLORS)]
         fig.add_trace(go.Scatter(
             x=df_source["Year"],
             y=df_source[ind],
@@ -899,7 +902,7 @@ def update_analysis_comparison(year1, year2, category, view_type):
         x=values1,
         name=f"Year {int(year1)}",
         orientation="h",
-        marker_color="#5e503f",  # Stone Brown
+        marker_color="#7eb8da",  # Pastel blue
         width=0.35  # Make bars fatter
     ))
     fig.add_trace(go.Bar(
@@ -907,7 +910,7 @@ def update_analysis_comparison(year1, year2, category, view_type):
         x=values2,
         name=f"Year {int(year2)}",
         orientation="h",
-        marker_color="#c6ac8f",  # Tan
+        marker_color="#c9a0dc",  # Pastel lavender
         width=0.35  # Make bars fatter
     ))
     
@@ -973,7 +976,7 @@ def update_corr_scatter(x_ind, y_ind):
         y=p(x_trend),
         mode="lines",
         name="Trend",
-        line={"color": "#5e503f", "dash": "dash"}  # Stone Brown trend
+        line={"color": "#e88b84", "dash": "dash", "width": 2}  # Pastel coral trend
     ))
     
     fig.update_layout(
