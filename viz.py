@@ -494,37 +494,6 @@ def render_tab_content(active_tab):
         ])
 
     elif active_tab == "tab-correlations":
-        # Correlation with SOFI
-        # Calculate correlation using normalized data
-        sofi_corr = df_normalized[indicator_cols + ["SOFI"]].corr()["SOFI"][:-1]
-        
-        # Invert correlation sign for negative indicators
-        # (because they're inverted in Sheet1, but we want to show real-world correlation)
-        sofi_corr_adjusted = sofi_corr.copy()
-        for ind in NEGATIVE_INDICATORS:
-            if ind in sofi_corr_adjusted.index:
-                sofi_corr_adjusted[ind] = -sofi_corr_adjusted[ind]
-        
-        # Sort by correlation value
-        sofi_corr_adjusted = sofi_corr_adjusted.sort_values(ascending=False)
-        
-        fig_sofi_corr = go.Figure(go.Bar(
-            y=sofi_corr_adjusted.index,
-            x=sofi_corr_adjusted.values,
-            orientation="h",
-            marker_color=["#77c98d" if x > 0 else "#e88b84" for x in sofi_corr_adjusted.values]  # Pastel green/red
-        ))
-        fig_sofi_corr.update_layout(
-            title={"text": "Correlation with SOFI Index", "font": {"size": 18, "color": "#22333b"}},
-            xaxis_title="Correlation Coefficient",
-            yaxis_title="Indicator",
-            template="plotly_white",
-            height=800,
-            margin={"t": 60},
-            font={"family": "'Georgia', 'Times New Roman', serif",
-                  "color": "#5e503f"}
-        )
-
         return html.Div([
             # Scatter Plot Analysis Card
             html.Div([
@@ -559,13 +528,6 @@ def render_tab_content(active_tab):
             ], style={"backgroundColor": "#FFFFFF", "borderRadius": "4px",
                      "padding": "25px", "marginBottom": "25px",
                      "boxShadow": "0 2px 12px rgba(0,0,0,0.06)",
-                     "border": "1px solid #c6ac8f"}),
-            
-            # Correlation Bar Chart Card
-            html.Div([
-                dcc.Graph(figure=fig_sofi_corr, config={"displayModeBar": True, "displaylogo": False})
-            ], style={"backgroundColor": "#FFFFFF", "borderRadius": "4px",
-                     "padding": "20px", "boxShadow": "0 2px 12px rgba(0,0,0,0.06)",
                      "border": "1px solid #c6ac8f"})
         ])
     
