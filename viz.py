@@ -99,22 +99,22 @@ app = dash.Dash(__name__, suppress_callback_exceptions=True)
 COLORS = {
     "black": "#0a0908",        # Complete absorption - authority, depth
     "jet": "#22333b",          # Intense darkness - drama, mystery
-    "linen": "#eae0d5",        # Subtle creamy neutral - sophistication
+    "linen": "#f5f1ec",        # Light warm cream - better contrast for pastels
     "tan": "#c6ac8f",          # Soft sunlit neutral - warmth
     "stone": "#5e503f",        # Solid mid-brown - grounded reliability
     # Semantic mappings
     "primary": "#22333b",      # Jet Black - main elements
     "secondary": "#5e503f",    # Stone Brown - secondary elements
     "accent": "#c6ac8f",       # Tan - highlights
-    "background": "#eae0d5",   # Soft Linen - page background
+    "background": "#f5f1ec",   # Light warm cream - page background
     "card": "#FFFFFF",         # White cards
     "text": "#0a0908",         # Black text
     "text-light": "#5e503f",   # Stone Brown for lighter text
-    "border": "#c6ac8f",       # Tan borders
+    "border": "#d4c4b0",       # Slightly darker tan borders for visibility
     "white": "#FFFFFF",
     "success": "#77c98d",      # Pastel green for positive
     "danger": "#e88b84",       # Pastel coral/red for negative
-    "light": "#eae0d5"         # Linen
+    "light": "#f5f1ec"         # Light warm cream
 }
 
 # Pastel color palette for multi-line charts - distinguishable and pleasant
@@ -234,7 +234,7 @@ def render_tab_content(active_tab):
                             ),
                             html.Button("Add Indicator", id="add-indicator-btn", n_clicks=0,
                                        style={"padding": "10px 20px", "backgroundColor": "#5e503f",
-                                              "color": "#eae0d5", "border": "none", 
+                                              "color": "#f5f1ec", "border": "none", 
                                               "borderRadius": "4px", "cursor": "pointer",
                                               "fontWeight": "500", "letterSpacing": "0.5px"})
                         ], style={"display": "flex", "alignItems": "center", "marginBottom": "20px"}),
@@ -274,7 +274,7 @@ def render_tab_content(active_tab):
                             options=[
                                 {"label": "One-time change (shift predicted curve by X%)", "value": "linear"},
                                 {"label": "Compound growth (exponential from 2024 baseline)", "value": "exponential"},
-                                {"label": "Annual rate (linear growth from 2024 baseline)", "value": "annual_rate"}
+                                {"label": "Linear growth (linear from 2024 baseline)", "value": "annual_rate"}
                             ],
                             value="linear",
                             id="growth-type",
@@ -285,13 +285,13 @@ def render_tab_content(active_tab):
                         html.Div([
                             html.Button("Clear All", id="clear-all-btn", n_clicks=0,
                                        style={"marginRight": "10px", "padding": "10px 20px",
-                                              "width": "120px", "backgroundColor": "#eae0d5",
+                                              "width": "120px", "backgroundColor": "#f5f1ec",
                                               "color": "#5e503f", "border": "2px solid #c6ac8f",
                                               "borderRadius": "4px", "cursor": "pointer",
                                               "fontWeight": "500", "letterSpacing": "0.5px"}),
                             html.Button("Apply Changes", id="apply-button", n_clicks=0,
                                        style={"padding": "10px 20px", "backgroundColor": "#22333b",
-                                              "color": "#eae0d5", "border": "none", 
+                                              "color": "#f5f1ec", "border": "none", 
                                               "width": "140px", "borderRadius": "4px",
                                               "cursor": "pointer", "fontWeight": "500",
                                               "letterSpacing": "0.5px"})
@@ -348,7 +348,8 @@ def render_tab_content(active_tab):
         fig_sofi.add_vline(x=2024, line_dash="dot", line_color="#c6ac8f",  # Tan
                           annotation_text="Forecast Start")
         fig_sofi.update_layout(
-            title={"text": "SOFI Index Over Time", "font": {"size": 18, "color": "#22333b"}},
+            title={"text": "<b>SOFI Index Over Time</b>", "font": {"size": 18, "color": "#22333b"},
+                   "x": 0.5, "xanchor": "center"},
             xaxis_title="Year",
             yaxis_title="SOFI Index",
             template="plotly_white",
@@ -368,7 +369,8 @@ def render_tab_content(active_tab):
             name="YoY Change"
         ))
         fig_yoy.update_layout(
-            title={"text": "Year-over-Year SOFI Change (%)", "font": {"size": 18, "color": "#22333b"}},
+            title={"text": "<b>Year-over-Year SOFI Change (%)</b>", "font": {"size": 18, "color": "#22333b"},
+                   "x": 0.5, "xanchor": "center"},
             xaxis_title="Year",
             yaxis_title="% Change",
             template="plotly_white",
@@ -573,7 +575,7 @@ def update_active_indicators_ui(active_indicators, current_values, current_ids):
     if not active_indicators:
         return html.Div("No indicators added yet. Select one from the dropdown above.",
                        style={"color": "#5e503f", "fontStyle": "italic", "padding": "15px",
-                              "backgroundColor": "#eae0d5", "borderRadius": "4px",
+                              "backgroundColor": "#f5f1ec", "borderRadius": "4px",
                               "border": "1px dashed #c6ac8f"})
 
     # Create a map of existing values
@@ -603,12 +605,12 @@ def update_active_indicators_ui(active_indicators, current_values, current_ids):
                                      "fontWeight": "500"}),
                 html.Button("×", id={"type": "remove-indicator-btn", "index": ind},
                            style={"padding": "4px 10px", "backgroundColor": "#5e503f",
-                                  "color": "#eae0d5", "border": "none",
+                                  "color": "#f5f1ec", "border": "none",
                                   "borderRadius": "4px", "cursor": "pointer",
                                   "fontWeight": "600", "fontSize": "14px",
                                   "transition": "all 0.3s"})
             ], style={"display": "flex", "alignItems": "center", "marginBottom": "10px",
-                     "padding": "10px 12px", "backgroundColor": "#eae0d5",
+                     "padding": "10px 12px", "backgroundColor": "#f5f1ec",
                      "borderRadius": "4px", "border": "1px solid #c6ac8f"})
         )
 
@@ -690,8 +692,8 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
     # Create subplot titles with positions
     subplot_titles = []
     for ind in indicators_to_show:
-        subplot_titles.append(f"{ind} ({changes_applied.get(ind, 0):+.1f}%)")
-    subplot_titles.append("SOFI Index")
+        subplot_titles.append(f"<b>{ind} ({changes_applied.get(ind, 0):+.1f}%)</b>")
+    subplot_titles.append("<b>SOFI Index</b>")
 
     # Create subplots with multiple rows
     fig = make_subplots(
@@ -701,6 +703,9 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
         horizontal_spacing=0.08,
         vertical_spacing=0.15
     )
+
+    # Ensure subplot title color matches main titles (black)
+    fig.update_annotations(font={"color": COLORS["black"]})
 
     # Add traces for each modified indicator
     for idx, ind_name in enumerate(indicators_to_show):
@@ -810,8 +815,9 @@ def update_trends_multi(selected_indicators):
                  annotation_text="Forecast Start")  # Tan
     
     fig.update_layout(
-        title={"text": "Selected Indicators Over Time (Normalized Values)",
-               "font": {"size": 18, "color": "#22333b"}},
+        title={"text": "<b>Selected Indicators Over Time (Normalized Values)</b>",
+               "font": {"size": 18, "color": "#22333b"},
+               "x": 0.5, "xanchor": "center"},
         xaxis_title="Year",
         yaxis_title="Normalized Value (0-1)",
         template="plotly_white",
@@ -885,8 +891,9 @@ def update_analysis_comparison(year1, year2, category, view_type):
     x_title = "Normalized Value (0-1)" if view_type == "normalized" else "Original Value (Log Scale)"
     
     fig.update_layout(
-        title={"text": f"{category_label} Indicators: {int(year1)} vs {int(year2)} ({view_type.title()} Values)",
-               "font": {"size": 18, "color": "#22333b"}},
+        title={"text": f"<b>{category_label} Indicators: {int(year1)} vs {int(year2)} ({view_type.title()} Values)</b>",
+               "font": {"size": 18, "color": "#22333b"},
+               "x": 0.5, "xanchor": "center"},
         xaxis_title=x_title,
         yaxis_title="Indicator",
         template="plotly_white",
@@ -944,8 +951,9 @@ def update_corr_scatter(x_ind, y_ind):
     ))
     
     fig.update_layout(
-        title={"text": f"Correlation: {x_ind} vs {y_ind} (r = {corr:.3f})",
-               "font": {"size": 18, "color": "#22333b"}},
+        title={"text": f"<b>Correlation: {x_ind} vs {y_ind} (r = {corr:.3f})</b>",
+               "font": {"size": 18, "color": "#22333b"},
+               "x": 0.5, "xanchor": "center"},
         xaxis_title=x_ind,
         yaxis_title=y_ind,
         template="plotly_white",
