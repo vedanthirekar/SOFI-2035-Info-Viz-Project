@@ -145,6 +145,15 @@ app.layout = html.Div([
                     html.P("State of the Future Index — Interactive Analysis Platform",
                           style={"color": COLORS["tan"], "margin": "15px 0 0 0", 
                                  "fontSize": "1.1rem", "fontWeight": "400", "letterSpacing": "1px"}),
+                    html.P([
+                        "Learn more about SOFI methodology and global futures research at ",
+                        html.A("The Millennium Project", 
+                              href="https://www.millennium-project.org/state-of-the-future-index/",
+                              target="_blank",
+                              style={"color": COLORS["linen"], "textDecoration": "underline",
+                                     "fontWeight": "500"})
+                    ], style={"color": COLORS["tan"], "margin": "10px 0 0 0", 
+                             "fontSize": "0.9rem", "fontWeight": "300", "letterSpacing": "0.5px"}),
                 ]),
                 
                 # Right side - Credits
