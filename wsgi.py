@@ -5,8 +5,8 @@ import sys
 import os
 
 # Add your project directory to the sys.path
-# IMPORTANT: Replace 'vedanthirekarSOFI' with your actual folder name
-project_home = '/home/vedanthirekarSOFI/SOFI-2035_info-Viz-code'
+# IMPORTANT: Replace with your actual PythonAnywhere path
+project_home = '/home/SOFI2035/sofi2035'
 if project_home not in sys.path:
     sys.path.insert(0, project_home)
 
