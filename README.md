@@ -4,7 +4,7 @@ An interactive web dashboard for analyzing and simulating the State of the Futur
 
 ![Dashboard Preview](https://img.shields.io/badge/Python-3.10-blue) ![Dash](https://img.shields.io/badge/Dash-3.2.0-green)
 
-This dashboard can be accessed at https://vedanthirekarsofi.pythonanywhere.com/
+This dashboard can be accessed at https://sofi2035.pythonanywhere.com/
 
 
 ## Features
