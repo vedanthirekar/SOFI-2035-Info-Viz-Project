@@ -93,7 +93,7 @@ def compute_sofi(df, indicator_weights):
 df_normalized["SOFI"] = compute_sofi(df_normalized[indicator_cols], weights)
 
 # ======== Dash App ========
-app = dash.Dash(__name__, suppress_callback_exceptions=True)
+app = dash.Dash(__name__, suppress_callback_exceptions=True, title="SOFI Dashboard")
 
 # Pastel Color Palette - Soft, distinguishable colors
 COLORS = {
@@ -136,20 +136,36 @@ app.layout = html.Div([
     html.Div([
         html.Div([
             html.Div([
-                html.H1("SOFI Dashboard", 
-                       style={"color": COLORS["linen"], "margin": "0", "fontSize": "2.8rem",
-                              "fontWeight": "600", "letterSpacing": "2px",
-                              "fontFamily": "'Georgia', serif"}),
-                html.P("State of the Future Index — Interactive Analysis Platform",
-                      style={"color": COLORS["tan"], "margin": "15px 0 0 0", 
-                             "fontSize": "1.1rem", "fontWeight": "400", "letterSpacing": "1px"}),
-                # html.Div([
-                #     html.Span("29 Indicators", style={"marginRight": "30px", "borderRight": f"1px solid {COLORS['stone']}", "paddingRight": "30px"}),
-                #     html.Span("1990–2035", style={"marginRight": "30px", "borderRight": f"1px solid {COLORS['stone']}", "paddingRight": "30px"}),
-                #     html.Span("Predictive Analytics")
-                # ], style={"marginTop": "20px", "fontSize": "0.9rem", "color": COLORS["tan"], 
-                #          "letterSpacing": "1px", "textTransform": "uppercase"})
-            ])
+                # Left side - Title and subtitle
+                html.Div([
+                    html.H1("SOFI Dashboard", 
+                           style={"color": COLORS["linen"], "margin": "0", "fontSize": "2.8rem",
+                                  "fontWeight": "600", "letterSpacing": "2px",
+                                  "fontFamily": "'Georgia', serif"}),
+                    html.P("State of the Future Index — Interactive Analysis Platform",
+                          style={"color": COLORS["tan"], "margin": "15px 0 0 0", 
+                                 "fontSize": "1.1rem", "fontWeight": "400", "letterSpacing": "1px"}),
+                ]),
+                
+                # Right side - Credits
+                html.Div([
+                    html.Div("Built by:", style={"color": COLORS["tan"], "fontSize": "0.85rem", 
+                                                  "marginBottom": "8px", "fontWeight": "500", 
+                                                  "letterSpacing": "0.5px"}),
+                    html.Div([
+                        html.Div("Vedant Hirekar", style={"marginBottom": "3px"}),
+                        html.Div("Dhruvil Joshi", style={"marginBottom": "3px"}),
+                        html.Div("Samiksha Singh", style={"marginBottom": "3px"}),
+                        html.Div("GV Supreeth", style={"marginBottom": "3px"}),
+                        html.Div("Mukund Komati", style={"marginBottom": "10px"}),
+                    ], style={"color": COLORS["linen"], "fontSize": "0.8rem", 
+                              "lineHeight": "1.4", "letterSpacing": "0.3px"}),
+                    html.Div("Indiana University Bloomington", 
+                            style={"color": COLORS["tan"], "fontSize": "0.85rem", 
+                                   "fontWeight": "600", "letterSpacing": "0.5px",
+                                   "marginTop": "8px"})
+                ], style={"textAlign": "right"})
+            ], style={"display": "flex", "justifyContent": "space-between", "alignItems": "center"})
         ], style={"maxWidth": "1400px", "margin": "0 auto", "padding": "0 30px"})
     ], style={"background": COLORS["jet"],
               "padding": "55px 20px", "marginBottom": "0", 
