@@ -53,6 +53,39 @@ INDICATOR_CATEGORIES = {
     "technology": ["Patents", "Internet Users"]
 }
 
+# Indicator scales/units for display
+INDICATOR_SCALES = {
+    "GNI per capita, PPP ": "constant 2021 international $",
+    "Income Inequality": "% income share by top 10%",
+    "Unemployment": "% of labor force",
+    "Poverty": "% at $2.15/day (2017 PPP)",
+    "CPIA ": "rating 1-6 (low to high)",
+    "FDI": "current US$ billions",
+    "R&D ": "% of GDP",
+    "Population growth": "annual %",
+    "Life expectancy": "years",
+    "Mortality rate, infant": "per 1,000 live births",
+    "Undernourishment": "% of population",
+    "Health expenditure": "current US$ per capita",
+    "Physicians": "per 1,000 people",
+    "Drinking water": "% with safe services",
+    "Renewable freshwater": "cubic meters per capita",
+    "Biocapacity ": "gha per person",
+    "Forest area": "% of land area",
+    "CO2 emissions": "ppm equivalent",
+    "Energy-Efficiency": "MJ/USD",
+    "Renewable energy": "% of total energy",
+    "Literacy, adult": "% ages 15+",
+    "School enrollment": "% gross secondary",
+    "Patents": "resident applications",
+    "Wars": "number of conflicts",
+    "Terrorism Incidents": "number of incidents",
+    "Refugees": "million people",
+    "Freedom Rights": "number of free countries",
+    "Gender equality": "% women in parliament",
+    "Internet Users": "% of population"
+}
+
 # Load weights from Sheet3
 # Drop any rows with NaN values and reset index
 df_weights_clean = df_weights.dropna().reset_index(drop=True)
@@ -737,11 +770,13 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
     num_rows = (total_plots + max_cols - 1) // max_cols
     num_cols = min(total_plots, max_cols)
 
-    # Create subplot titles with positions
+    # Create subplot titles with positions and scales
     subplot_titles = []
     for ind in indicators_to_show:
-        subplot_titles.append(f"<b>{ind} ({changes_applied.get(ind, 0):+.1f}%)</b>")
-    subplot_titles.append("<b>SOFI Index</b>")
+        scale = INDICATOR_SCALES.get(ind, "")
+        scale_text = f"<br><sub>{scale}</sub>" if scale else ""
+        subplot_titles.append(f"<b>{ind} ({changes_applied.get(ind, 0):+.1f}%)</b>{scale_text}")
+    # subplot_titles.append("<b>SOFI Index</b><br><sub>normalized (2024 = 1.0)</sub>")
 
     # Create subplots with multiple rows
     fig = make_subplots(
@@ -914,6 +949,18 @@ def update_analysis_comparison(year1, year2, category, view_type):
     values1 = [data1[col] for col in selected_indicators]
     values2 = [data2[col] for col in selected_indicators]
     
+    # Create custom hover templates with scales
+    hover_template1 = []
+    hover_template2 = []
+    for ind in selected_indicators:
+        scale = INDICATOR_SCALES.get(ind, "")
+        if scale:
+            hover_template1.append(f"<b>{ind}</b><br>Scale: {scale}<br>Value: %{{x}}<br>Year: {int(year1)}<extra></extra>")
+            hover_template2.append(f"<b>{ind}</b><br>Scale: {scale}<br>Value: %{{x}}<br>Year: {int(year2)}<extra></extra>")
+        else:
+            hover_template1.append(f"<b>{ind}</b><br>Value: %{{x}}<br>Year: {int(year1)}<extra></extra>")
+            hover_template2.append(f"<b>{ind}</b><br>Value: %{{x}}<br>Year: {int(year2)}<extra></extra>")
+    
     fig = go.Figure()
     fig.add_trace(go.Bar(
         y=selected_indicators,
@@ -921,7 +968,8 @@ def update_analysis_comparison(year1, year2, category, view_type):
         name=f"Year {int(year1)}",
         orientation="h",
         marker_color="#7eb8da",  # Pastel blue
-        width=0.35  # Make bars fatter
+        width=0.35,  # Make bars fatter
+        hovertemplate=hover_template1
     ))
     fig.add_trace(go.Bar(
         y=selected_indicators,
@@ -929,7 +977,8 @@ def update_analysis_comparison(year1, year2, category, view_type):
         name=f"Year {int(year2)}",
         orientation="h",
         marker_color="#c9a0dc",  # Pastel lavender
-        width=0.35  # Make bars fatter
+        width=0.35,  # Make bars fatter
+        hovertemplate=hover_template2
     ))
     
     # Dynamic height based on number of indicators
@@ -998,12 +1047,19 @@ def update_corr_scatter(x_ind, y_ind):
         line={"color": "#e88b84", "dash": "dash", "width": 2}  # Pastel coral trend
     ))
     
+    # Get scales for axis labels
+    x_scale = INDICATOR_SCALES.get(x_ind, "")
+    y_scale = INDICATOR_SCALES.get(y_ind, "")
+    
+    x_axis_label = f"{x_ind}<br>({x_scale})" if x_scale else x_ind
+    y_axis_label = f"{y_ind}<br>({y_scale})" if y_scale else y_ind
+    
     fig.update_layout(
         title={"text": f"<b>Correlation: {x_ind} vs {y_ind} (r = {corr:.3f})</b>",
                "font": {"size": 18, "color": "#22333b"},
                "x": 0.5, "xanchor": "center"},
-        xaxis_title=x_ind,
-        yaxis_title=y_ind,
+        xaxis_title=x_axis_label,
+        yaxis_title=y_axis_label,
         template="plotly_white",
         height=600,
         margin={"t": 60},
