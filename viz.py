@@ -226,7 +226,14 @@ app.layout = html.Div([
               "borderBottom": f"1px solid {COLORS['tan']}"}),
 
     # Content area
-    html.Div(id="tab-content", style={"maxWidth": "1400px", "margin": "0 auto", "padding": "40px 30px"})
+    html.Div(id="tab-content", style={"maxWidth": "1400px", "margin": "0 auto", "padding": "40px 30px"}),
+    
+    # Subtle footer note
+    html.Div([
+        html.P("Note: Double Click to zoom out of the graph. Mobile users should avoid touching graphs directly to prevent display issues.",
+               style={"color": COLORS["stone"], "fontSize": "0.75rem", "fontStyle": "italic",
+                      "textAlign": "center", "margin": "0", "opacity": "0.7"})
+    ], style={"maxWidth": "1400px", "margin": "0 auto", "padding": "20px 30px 30px 30px"})
 ], style={"backgroundColor": COLORS["linen"], "minHeight": "100vh", 
           "fontFamily": "'Georgia', 'Times New Roman', serif"})
 
@@ -371,7 +378,7 @@ def render_tab_content(active_tab):
         ))
         
         fig_sofi.add_vline(x=2024, line_dash="dot", line_color="#c6ac8f",  # Tan
-                          annotation_text="Forecast Start")
+                          annotation_text="Forecast")
         fig_sofi.update_layout(
             title={"text": "<b>SOFI Index Over Time</b>", "font": {"size": 18, "color": "#22333b"},
                    "x": 0.5, "xanchor": "center"},
@@ -837,7 +844,7 @@ def update_trends_multi(selected_indicators):
         ))
     
     fig.add_vline(x=2024, line_dash="dot", line_color="#c6ac8f",
-                 annotation_text="Forecast Start")  # Tan
+                 annotation_text="Forecast")  # Tan
     
     fig.update_layout(
         title={"text": "<b>Selected Indicators Over Time (Normalized Values)</b>",
