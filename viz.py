@@ -177,7 +177,7 @@ app.layout = html.Div([
             ], style={"display": "flex", "justifyContent": "space-between", "alignItems": "center"})
         ], style={"maxWidth": "1400px", "margin": "0 auto", "padding": "0 30px"})
     ], style={"background": COLORS["jet"],
-              "padding": "55px 20px", "marginBottom": "0", 
+              "padding": "35px 20px", "marginBottom": "0", 
               "boxShadow": "0 4px 20px rgba(0,0,0,0.2)"}),
 
     # Elegant Tabs with Earth Tones
