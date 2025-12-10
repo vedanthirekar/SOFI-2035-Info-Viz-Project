@@ -92,6 +92,15 @@ def compute_sofi(df, indicator_weights):
 # Calculate SOFI using normalized values
 df_normalized["SOFI"] = compute_sofi(df_normalized[indicator_cols], weights)
 
+# Normalize SOFI values using 2024 as maximum (1.0)
+year_2024_idx = df_normalized[df_normalized["Year"] == 2024].index
+if len(year_2024_idx) > 0:
+    sofi_2024_value = df_normalized.loc[year_2024_idx[0], "SOFI"]
+    df_normalized["SOFI"] = df_normalized["SOFI"] / sofi_2024_value
+    print(f"SOFI normalized with 2024 as baseline (1.0): original 2024 value was {sofi_2024_value:.4f}")
+else:
+    print("Warning: 2024 not found in data, SOFI not normalized")
+
 # ======== Dash App ========
 app = dash.Dash(__name__, suppress_callback_exceptions=True, title="SOFI Dashboard")
 
@@ -710,6 +719,13 @@ def update_graph(apply_clicks, input_values, input_ids, growth_type):
 
     # Recalculate SOFI
     df_norm_adj["SOFI"] = compute_sofi(df_norm_adj[indicator_cols], weights)
+    
+    # Apply same normalization as baseline (using original 2024 value)
+    year_2024_idx = df_normalized[df_normalized["Year"] == 2024].index
+    if len(year_2024_idx) > 0:
+        # Get the original 2024 SOFI value before any adjustments
+        original_2024_sofi = compute_sofi(df_normalized.loc[year_2024_idx, indicator_cols], weights)[0]
+        df_norm_adj["SOFI"] = df_norm_adj["SOFI"] / original_2024_sofi
 
     # Show all added indicators (including those with 0 change)
     indicators_to_show = list(changes_applied.keys())
