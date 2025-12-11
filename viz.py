@@ -10,7 +10,7 @@ import os
 # ======== Load Data from Excel ========
 # Get the directory where this script is located
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_FILE = os.path.join(BASE_DIR, "data1.xlsx")
+DATA_FILE = os.path.join(BASE_DIR, "filtered_data.xlsx")
 
 # Sheet1: Normalized values (for SOFI calculation)
 df_normalized = pd.read_excel(DATA_FILE, sheet_name="Sheet1")
